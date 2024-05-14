@@ -45,53 +45,25 @@ options(bitmapType = "cairo")
 
 ```{r lib, message=F, echo= TRUE}
 library(here)
-#analisis
-library(ggsignif)
-library(ggrepel)
-library(ggpubr)
-#library(inlmisc)
-library(nortest) #para testear distribucion
-library(skimr) #provides a frictionless approach to summary statistics 
-library(lubridate)
-library(easystats) # multiples unciones analiticas
-library(lme4)
-library(skimr)
-library(readxl)
-library(fitdistrplus)
-# vizualizacion
-library(ggridges)
-library(sf)
-library(GGally)
-library(tidyverse, quietly = TRUE)
-library(knitr, quietly = TRUE)
 library(kableExtra)
-library(raster)
-library(egg)
-library(car) #Variance inflation Factor
 library(ggthemes)
-library(sjPlot)
-library(GGally)
-library(CCAMLRGIS)
+#analisis
+library(ggpubr)
+library(easystats) # multiples unciones analiticas
+library(sf)
+library(tidyverse, quietly = TRUE)
 library(modelsummary)
-library(tinytable)
 library(terra) # replace raster
+library(TropFishR)
 ```
 
 # Background
 
 # Methodology
 
-## Length structure krill 48 Statistical Subarea
 
-Another important piece of information for a stock evaluation refers to
-the biological components such as average sizes and weights across areas
-and years. To do this, we will explore the biological data and prepare
-the output to add it into stock assessment integrate model
-[@Methot2013].
 
-the idea is to correlate mean lengths with SIC.
-
-## Data exploratory analysis
+A important piece of information for a stock evaluation refers to the biological components such as average sizes and weights across areas and years. To do this, we will explore the biological data and prepare the output to add it into stock assessment integrate model [@Methot2013].
 
 The object `ohbio2` come from data exploration analysis in data request
 CCAMLR data. This objetc have bio information from krill.
@@ -141,13 +113,11 @@ ohbio3 <- ohbio2 %>%
 Save data further analysis
 ```{r}
 length481 <-ohbio3 %>% 
-  dplyr::select(7, 9, 11, 12, 14, 24, 25, 29, 42, 44, 46, 47, 43) %>% 
+  dplyr::select(7, 9, 11, 12, 14, 24, 25, 29, 42, 44, 46, 47, 43, 45) %>% 
   filter(asd_code=="481")
 summary(length481)  
 #save(length481, file = "length481.RData")
 ```
-
-## Plots
 
 Filter data regarding to previous glances. Follow with a quick glimpse
 to all 48 subarea length composition from monitoring fisheries (Figure
@@ -183,8 +153,6 @@ jz
 ```
 
 
-## Maps length data
-
 First thing is get different rater layer to join krill data length
 according different porpoises.
 
@@ -198,11 +166,7 @@ Test Strata SSMU, just to know another way to join data, but this kind of spatia
 
 
 
-## Grouping Length data into Grid
-
-
-###  STRATA
-
+## Grouping bio data into stratas
 
 ```{r ssmu1}
 names(length481)
@@ -251,7 +215,7 @@ histogram length data
 
 ```{r warning=FALSE}
 jzstrata <- ggplot(sf4 %>% 
-               filter(Year>2000,
+               filter(Year>2010,
                       ID !="Outer"),
              aes(x=length_total_cm, 
                  y = as.factor(Month), 
@@ -268,36 +232,120 @@ jzstrata <- ggplot(sf4 %>%
                                 to = 12, by = 4))+
   scale_fill_viridis_d(name="Strata",
                        option="F")+
-  theme_minimal()+
+  theme_few()+
   xlab("Length (cm.)")+
   ylab("")
 jzstrata
 ```
+Now, must filter the DF
+
+```{r}
+sf5 <- sf4 %>% 
+  dplyr::select(c("ID",
+        "date_catchperiod_start",
+        "length_total_cm",
+        "Year",
+        "Month",
+        "sex_code",
+         "greenweight_kg")) %>% 
+  mutate(ID = if_else(ID == "Extra", "GERLASHE", ID)) %>% 
+  filter(ID !="Outer") %>% 
+  data.frame()
+```
+relacion Logitud peso
 
 
-#### Grouping by strata
+```{r}
+cols <- c("M" = "darkgreen", "F" = "orange")
 
-# Conclusion
+RL <- ggplot(sf5 %>% 
+               filter(sex_code %in% c("M", "F"),
+                      greenweight_kg<0.004),
+             aes(x=length_total_cm,
+                  y=greenweight_kg,
+                 colour=sex_code))+
+  geom_point()+
+  stat_smooth(method = "loess", 
+              fullrange = TRUE, se = FALSE) + 
+  scale_colour_manual(values=cols)+
+  facet_wrap(.~ID)+
+  theme_few()
+RL
+```
 
--   On the one hand, the models with mixed effects serve to verify the
-    influence of the spatial component, in this case each cell y in
-    which the data of the dependent variable (krill sizes) and the
-    independent variable (environmental variables) were considered.
+```{r}
+sf5test <- sf5 %>%
+  mutate(date_catchperiod_start = as.Date(date_catchperiod_start)) %>%  # Asegurar que la columna de fechas sea de tipo Date
+  mutate(Yearly_Group = floor_date(date_catchperiod_start, "year")) %>%  # Crear una nueva columna con la fecha agrupada mensualmente
+  drop_na(length_total_cm) 
 
--   The influence of environmental variables on the sizes of the krill
-    fishery is corroborated. The environmental variable with the
-    greatest impact on krill sizes is Chlorophyll in negative terms. In
-    other words, the more chlorophyll in the environment, the sizes
-    decrease because there is greater recruitment due to the abundance
-    of substrate for the krill population.
 
--   In a way, it is proof that the krill population structure is
-    influenced not only by fishing pressure, but also by environmental
-    conditions.
 
--   With these results, the environmental component is solidly
-    incorporated into the krill stock assessment model in the Antarctic
-    Peninsula, specifically in Subarea 48.1.
+lfq1new <- lfqCreate(data = sf5test,
+                     Lname = "length_total_cm", 
+                     Dname = "Yearly_Group",
+                     bin_size = 0.1)
+
+synLFQ7a <- lfqModify(lfq1new, bin_size = 0.2)
+
+plot(synLFQ7a, Fname = "catch")
+```
+
+
+```{r}
+# plot raw and restructured LFQ data
+lfqbin <- lfqRestructure(lfq1new , MA = 5, addl.sqrt = TRUE)
+opar <- par(mfrow = c(2,1), mar = c(2,5,2,3), oma = c(2,0,0,0))
+plot(lfqbin, Fname = "catch", date.axis = "modern")
+plot(lfqbin, Fname = "rcounts", date.axis = "modern")
+par(opar)
+```
+```{r}
+# Response surface analyss
+res_RSA <- ELEFAN(lfq1new, Linf_range = seq(45,50,1), MA = 5,
+                  K_range = seq(0.01,2,0.1), addl.sqrt = TRUE,
+                  hide.progressbar = TRUE, contour=5)
+
+# show results
+res_RSA$par; res_RSA$Rn_max
+
+
+
+
+# run ELEFAN with simulated annealing
+res_SA <- ELEFAN_SA(lfq1new, SA_time = 60*0.5, SA_temp = 6e5,
+                    MA = 5, seasonalised = TRUE, addl.sqrt = TRUE,
+                    init_par = list(Linf = 49, 
+                                    K = 0.5, 
+                                    t_anchor = 0.5,
+                                    C=0.5, ts = 0.5),
+                    low_par = list(Linf = 45, K = 0.01, t_anchor = 0, C = 0, ts = 0),
+                    up_par = list(Linf = 50, K = 1, t_anchor = 1, C = 1, ts = 1))
+# show results
+res_SA$par; res_SA$Rn_max
+
+
+# run ELEFAN with genetic algorithm
+res_GA <- ELEFAN_GA(lfq1new, MA = 5, seasonalised = TRUE, maxiter = 10, 
+                    addl.sqrt = TRUE,
+                    low_par = list(Linf = 45, K = 0.01, t_anchor = 0, C = 0, ts = 0),
+                    up_par = list(Linf = 50, K = 1, t_anchor = 1, C = 1, ts = 1),
+                    monitor = FALSE)
+# show results
+res_GA$par; res_GA$Rn_max
+```
+
+
+```{r}
+# plot LFQ and growth curves
+plot(lfqbin, Fname = "rcounts",date.axis = "modern", ylim=c(0,8))
+lt <- lfqFitCurves(lfq1new, par = list(Linf=4.9, K=0.2, 
+                                       t_anchor=0.25, C=0.3, ts=0),
+                   draw = TRUE, col = "grey", lty = 1, lwd=1.5)
+
+```
+
+gener
 
 # References
 
