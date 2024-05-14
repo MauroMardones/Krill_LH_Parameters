@@ -1,0 +1,304 @@
+---
+title: "Krill Life Parammetrs estimation in a context spatial in WAP"
+subtitle: "Supporting analysis to incorporate in Krill stock assessment frameworks"
+author: "Mardones, M; Cárdenas, C."
+date:  "`r format(Sys.time(), '%d %B, %Y')`"
+bibliography: seaice.bib
+csl: apa.csl
+link-citations: yes
+linkcolor: blue
+output:
+  html_document:
+    keep_md: true
+    toc: true
+    toc_deep: 3
+    toc_float:
+      collapsed: false
+      smooth_scroll: false
+    theme: cosmo
+    fontsize: 0.9em
+    linestretch: 1.7
+    html-math-method: katex
+    self-contained: true
+    code-tools: true
+editor_options: 
+  markdown: 
+    wrap: 72
+---
+
+
+```{r setup1}
+rm(list = ls())
+knitr::opts_chunk$set(echo = TRUE,
+                      message = FALSE,
+                      warning = FALSE,
+                      fig.align = 'center',
+                      dev = 'jpeg',
+                      dpi = 300)
+#XQuartz is a mess, put this in your onload to default to cairo instead
+options(bitmapType = "cairo") 
+# (https://github.com/tidyverse/ggplot2/issues/2655)
+# Lo mapas se hacen mas rapido
+```
+
+
+
+```{r lib, message=F, echo= TRUE}
+library(here)
+#analisis
+library(ggsignif)
+library(ggrepel)
+library(ggpubr)
+#library(inlmisc)
+library(nortest) #para testear distribucion
+library(skimr) #provides a frictionless approach to summary statistics 
+library(lubridate)
+library(easystats) # multiples unciones analiticas
+library(lme4)
+library(skimr)
+library(readxl)
+library(fitdistrplus)
+# vizualizacion
+library(ggridges)
+library(sf)
+library(GGally)
+library(tidyverse, quietly = TRUE)
+library(knitr, quietly = TRUE)
+library(kableExtra)
+library(raster)
+library(egg)
+library(car) #Variance inflation Factor
+library(ggthemes)
+library(sjPlot)
+library(GGally)
+library(CCAMLRGIS)
+library(modelsummary)
+library(tinytable)
+library(terra) # replace raster
+```
+
+# Background
+
+# Methodology
+
+## Length structure krill 48 Statistical Subarea
+
+Another important piece of information for a stock evaluation refers to
+the biological components such as average sizes and weights across areas
+and years. To do this, we will explore the biological data and prepare
+the output to add it into stock assessment integrate model
+[@Methot2013].
+
+the idea is to correlate mean lengths with SIC.
+
+## Data exploratory analysis
+
+The object `ohbio2` come from data exploration analysis in data request
+CCAMLR data. This objetc have bio information from krill.
+
+```{r  echo=FALSE}
+#datos entregados por secretaria de CCMLAR
+metadata <- load("~/DOCAS/Data/565_C1_KRI_2021-10-01/DATA_PRODUCT_565.RData")
+# Data procesada por MMardones
+#ohbio <- load("DataLengthKrill.RData")
+#ohbio
+#metadata
+#son lo mismo
+```
+
+```{r}
+#cargo objeto
+meta <- get("METADATA")
+c1 <- get("C1")
+ohbio <- get("OBS_HAUL_BIOLOGY")
+names(ohbio)
+dim(c1)
+dim(ohbio)
+```
+
+
+Join data set with master as `c1` set. This join is trought
+`obs_haul_id` variable to get geoposition variables
+
+```{r warning=FALSE}
+ohbio2 <- left_join(c1, ohbio, by="obs_haul_id")
+names(ohbio2)
+```
+
+Firsts glance. Test how many register have by year. In this case,
+`length_total_cm` by season ccamlr. Same exercise in date period
+`date_catchperiod_start` to separate dates.
+
+```{r}
+ohbio3 <- ohbio2 %>%
+  mutate(Year = year(date_catchperiod_start),
+         Month = month(date_catchperiod_start),
+         Day = day(date_catchperiod_start)) %>% 
+  #toupper() para convertir los valores a mayúsculas
+  mutate(sex_code = toupper(sex_code))
+```
+
+Save data further analysis
+```{r}
+length481 <-ohbio3 %>% 
+  dplyr::select(7, 9, 11, 12, 14, 24, 25, 29, 42, 44, 46, 47, 43) %>% 
+  filter(asd_code=="481")
+summary(length481)  
+#save(length481, file = "length481.RData")
+```
+
+## Plots
+
+Filter data regarding to previous glances. Follow with a quick glimpse
+to all 48 subarea length composition from monitoring fisheries (Figure
+\@ref(fig:lenthtrwal)).
+
+```{r lenthtrwal, message=F, warning=F, fig.cap="Krill length by Trawl technique"}
+
+jz <- ggplot(length481 %>% 
+               dplyr::filter(Year>2000),
+             aes(x=length_total_cm, 
+                 y = as.factor(Month), 
+                 fill=asd_code))+
+  #geom_joy(alpha=0.9) +
+  geom_density_ridges(stat = "binline", bins = 50, 
+                      scale = 1.8, 
+                      draw_baseline = FALSE,
+                      alpha=0.8)+
+  facet_wrap(Year~.) +   
+  geom_vline(xintercept = 3.6, color = "red")+
+  scale_x_continuous(breaks = seq(from = 1, to = 10, 
+                                  by = 1))+
+  scale_y_discrete(breaks = seq(from = 2000, 
+                                to = 2020, by = 1))+
+  scale_fill_viridis_d(name="SubArea",
+                       option="F")+
+  theme_bw()+
+  theme(axis.text.x = element_text(angle = 90, 
+                                   hjust = 1))+
+  xlim(0,10)+
+  xlab("Longitud (cm.)")+
+  ylab("")
+jz
+```
+
+
+## Maps length data
+
+First thing is get different rater layer to join krill data length
+according different porpoises.
+
+```{r raster}
+# Uso las agrupaciones de Strata
+strata <- st_read("~/DOCAS/Mapas/Antarctic_SHPfiles/Strata.shp",
+                quiet=T)
+strata=st_transform(strata, "+proj=latlong +ellps=WGS84")
+```
+Test Strata SSMU, just to know another way to join data, but this kind of spatial structuration is deprecated to mamagemente use (Figure\@ref(fig:maptest2).
+
+
+
+## Grouping Length data into Grid
+
+
+###  STRATA
+
+
+```{r ssmu1}
+names(length481)
+ohbio6 <- st_as_sf(length481 %>% 
+                     drop_na(latitude_set_end), 
+                   coords = c("longitude_set_end", "latitude_set_end"),  
+                  crs = "+proj=latlong +ellps=WGS84")
+```
+
+
+Length composition by Strata CCAMLR to visualization first. First step is group data into to poligons strata.
+
+```{r wranlingdata}
+strata <- st_make_valid(strata)
+sf4 <- st_join(strata, ohbio6)
+```
+
+
+scattter plot lenght data
+```{r warning=F}
+lentraplot <- ggplot(sf4 %>% 
+                   filter(Year>2000,
+                      ID !="Outer"), 
+               aes(Year, tapro,
+               fill=Month))+
+    geom_point(alpha=0.3, 
+               shape=21, 
+               show.legend = T) +
+    scale_fill_viridis_c(option="G")+
+    geom_hline(yintercept = 4.16,
+               color = "black",
+               linetype  = 2)+
+    stat_smooth(method = "loess",
+                col="red")+
+    theme_bw()+ 
+    facet_wrap(.~ID)+
+    theme(axis.text.x = element_text(angle = 90, hjust = 2))+
+    guides(fill = guide_legend(reverse=F))+
+    
+    ylab("") +
+    xlab("") 
+lentraplot
+```
+histogram length data
+
+
+```{r warning=FALSE}
+jzstrata <- ggplot(sf4 %>% 
+               filter(Year>2000,
+                      ID !="Outer"),
+             aes(x=length_total_cm, 
+                 y = as.factor(Month), 
+                 fill=ID))+
+  geom_density_ridges(stat = "binline", bins = 30, 
+                      scale = 1.9, 
+                      draw_baseline = FALSE,
+                      alpha=0.9)+
+  facet_grid(Year~ID) +   
+  geom_vline(xintercept = 3.6, color = "red")+
+  scale_x_continuous(breaks = seq(from = 1, to = 10, 
+                                  by = 2))+
+  scale_y_discrete(breaks = seq(from = 1, 
+                                to = 12, by = 4))+
+  scale_fill_viridis_d(name="Strata",
+                       option="F")+
+  theme_minimal()+
+  xlab("Length (cm.)")+
+  ylab("")
+jzstrata
+```
+
+
+#### Grouping by strata
+
+# Conclusion
+
+-   On the one hand, the models with mixed effects serve to verify the
+    influence of the spatial component, in this case each cell y in
+    which the data of the dependent variable (krill sizes) and the
+    independent variable (environmental variables) were considered.
+
+-   The influence of environmental variables on the sizes of the krill
+    fishery is corroborated. The environmental variable with the
+    greatest impact on krill sizes is Chlorophyll in negative terms. In
+    other words, the more chlorophyll in the environment, the sizes
+    decrease because there is greater recruitment due to the abundance
+    of substrate for the krill population.
+
+-   In a way, it is proof that the krill population structure is
+    influenced not only by fishing pressure, but also by environmental
+    conditions.
+
+-   With these results, the environmental component is solidly
+    incorporated into the krill stock assessment model in the Antarctic
+    Peninsula, specifically in Subarea 48.1.
+
+# References
+
+
