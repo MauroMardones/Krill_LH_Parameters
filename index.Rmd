@@ -215,6 +215,7 @@ histogram length data
 
 ```{r warning=FALSE}
 jzstrata <- ggplot(sf4 %>% 
+                     mutate(ID = if_else(ID == "Extra", "GERLASHE", ID)) %>% 
                filter(Year>2010,
                       ID !="Outer"),
              aes(x=length_total_cm, 
@@ -252,57 +253,161 @@ sf5 <- sf4 %>%
   filter(ID !="Outer") %>% 
   data.frame()
 ```
-relacion Logitud peso
 
+relacion Logitud peso
 
 ```{r}
 cols <- c("M" = "darkgreen", "F" = "orange")
-
 RL <- ggplot(sf5 %>% 
                filter(sex_code %in% c("M", "F"),
                       greenweight_kg<0.004),
              aes(x=length_total_cm,
                   y=greenweight_kg,
-                 colour=sex_code))+
+             colour=sex_code))+
   geom_point()+
   stat_smooth(method = "loess", 
-              fullrange = TRUE, se = FALSE) + 
+              fullrange = TRUE) + 
   scale_colour_manual(values=cols)+
-  facet_wrap(.~ID)+
+  facet_grid(.~ID)+
   theme_few()
 RL
 ```
 
 ```{r}
 sf5test <- sf5 %>%
+  filter(Year>2015) %>% 
   mutate(date_catchperiod_start = as.Date(date_catchperiod_start)) %>%  # Asegurar que la columna de fechas sea de tipo Date
-  mutate(Yearly_Group = floor_date(date_catchperiod_start, "year")) %>%  # Crear una nueva columna con la fecha agrupada mensualmente
+ mutate(monthly_Group = floor_date(date_catchperiod_start, "month")) %>%  # Crear una nueva columna con la fecha agrupada mensualmente
   drop_na(length_total_cm) 
 
 
+# Crear una lista para almacenar los resultados de cada ID
+lfq_results <- list()
 
-lfq1new <- lfqCreate(data = sf5test,
-                     Lname = "length_total_cm", 
-                     Dname = "Yearly_Group",
-                     bin_size = 0.1)
-
-synLFQ7a <- lfqModify(lfq1new, bin_size = 0.2)
-
-plot(synLFQ7a, Fname = "catch")
+# Iterar sobre cada ID
+for (id in unique(sf5test$ID)) {
+  # Filtrar los datos para el ID actual
+  df_id <- sf5test %>% filter(ID == id)
+  
+  # Crear un objeto lfq para el ID actual
+  lfq <- lfqCreate(data = df_id,
+                   Lname = "length_total_cm",
+                   Dname = "monthly_Group",
+                   bin_size = 0.1)
+  
+  # Agregar el resultado a la lista
+  lfq_results[[id]] <- lfq
+  
+  # Graficar el objeto lfq
+  plot(lfq, Fname = "catch")
+}
 ```
 
 
 ```{r}
 # plot raw and restructured LFQ data
-lfqbin <- lfqRestructure(lfq1new , MA = 5, addl.sqrt = TRUE)
-opar <- par(mfrow = c(2,1), mar = c(2,5,2,3), oma = c(2,0,0,0))
-plot(lfqbin, Fname = "catch", date.axis = "modern")
-plot(lfqbin, Fname = "rcounts", date.axis = "modern")
-par(opar)
+lfqbin <- lfqRestructure(lfq1new , MA = 3, addl.sqrt = TRUE)
+plot(lfqbin, hist.col = c("white", "black"),
+  image.col = c(rep(rgb(1,0.8,0.8),1000), "white", rep(rgb(0.8,0.8,1),1000)),
+  ylim = c(0,max(lfqbin$midLengths+0.5)))
+tmp <- lfqFitCurves(lfqbin, par = list(Linf=6.5, K=0.45, t_anchor=0.1),
+  draw = TRUE, col=4, lty=2)
+
+
+PW <- powell_wetherall(lfqbin, catch_columns = 1:7, reg_int = c(2,9) )
+
+PW$confidenceInt_Linf
+
+```
+
+```{r}
+# Crear una lista para almacenar los resultados de Powell-Wetherall
+PW_results <- list()
+
+# Iterar sobre cada objeto lfq almacenado en lfq_results
+for (lfq in lfq_results) {
+  # Restructurar el objeto lfq
+  lfqbin <- lfqRestructure(lfq, MA = 3, addl.sqrt = TRUE)
+  
+  # Graficar el objeto lfq reestructurado
+  plot(lfqbin, hist.col = c("white", "black"),
+       image.col = c(rep(rgb(1,0.8,0.8),1000), "white", rep(rgb(0.8,0.8,1),1000)),
+       ylim = c(0,max(lfqbin$midLengths+0.5)))
+  
+  # Ajustar curvas al objeto lfq reestructurado
+  tmp <- lfqFitCurves(lfqbin, par = list(Linf=6.5, K=0.45, t_anchor=0.1),
+                      draw = TRUE, col=4, lty=2)
+  
+  # Calcular los intervalos de confianza de L_inf usando Powell-Wetherall
+  PW <- powell_wetherall(lfqbin, catch_columns = 1:7, reg_int = c(2,9))
+  
+  # Almacenar los resultados de Powell-Wetherall en la lista PW_results
+  PW_results[[length(PW_results) + 1]] <- PW$Linf_est
+}
+
 ```
 ```{r}
+library(kableExtra)
+
+# Crear una lista para almacenar los resultados de Powell-Wetherall
+PW_results <- list()
+
+# Iterar sobre cada objeto lfq almacenado en lfq_results
+for (lfq in lfq_results) {
+  # Restructurar el objeto lfq
+  lfqbin <- lfqRestructure(lfq, MA = 3, addl.sqrt = TRUE)
+  
+  # Ajustar curvas al objeto lfq reestructurado
+  tmp <- lfqFitCurves(lfqbin, par = list(Linf=6.5, K=0.45, t_anchor=0.1),
+                      draw = TRUE, col=4, lty=2)
+  
+  # Calcular los intervalos de confianza de L_inf usando Powell-Wetherall
+  PW <- powell_wetherall(lfqbin, catch_columns = 1:7, reg_int = c(2,9))
+  
+  # Almacenar los resultados de Powell-Wetherall en la lista PW_results
+  PW_results[[length(PW_results) + 1]] <- data.frame(ID = lfq$meta_data$ID,
+                                                      Linf_est = PW$Linf_est,
+                                                      k_est = PW$k_est)
+}
+
+# Unir los resultados en un solo dataframe
+PW_table <- do.call(rbind, PW_results)
+
+# Crear una tabla kbl
+PW_table_kbl <- kbl(PW_table, caption = "Resultados de Powell-Wetherall por ID") %>%
+  kable_classic(full_width = FALSE)
+
+# Visualizar la tabla
+PW_table_kbl
+
+```
+
+
+```{r}
+
+lfqbin2 <- ELEFAN(
+  lfq = lfqbin,  MA = 3,
+  Linf_range = seq(5.6, 7.5, length.out = 30),
+  K_range = exp(seq(log(0.1),log(1), length.out = 30)),
+  method = "cross",
+  cross.date = lfqbin$dates[3],
+  cross.midLength = lfqbin$midLengths[5],
+  contour = TRUE, add.values = FALSE,
+  plot = TRUE,
+  hide.progressbar = TRUE # change to 'TRUE' to follow algorithm's progression
+)
+
+points(lfqbin2$par["Linf"], lfqbin2$par["K"], pch="*", cex=2, col=2)
+```
+
+```{r}
+unlist(lfqbin2$par)
+```
+
+
+```{r}
 # Response surface analyss
-res_RSA <- ELEFAN(lfq1new, Linf_range = seq(45,50,1), MA = 5,
+res_RSA <- ELEFAN(lfqbin , Linf_range = seq(5.5,6.5,1), MA = 3,
                   K_range = seq(0.01,2,0.1), addl.sqrt = TRUE,
                   hide.progressbar = TRUE, contour=5)
 
@@ -315,12 +420,13 @@ res_RSA$par; res_RSA$Rn_max
 # run ELEFAN with simulated annealing
 res_SA <- ELEFAN_SA(lfq1new, SA_time = 60*0.5, SA_temp = 6e5,
                     MA = 5, seasonalised = TRUE, addl.sqrt = TRUE,
-                    init_par = list(Linf = 49, 
+                    init_par = list(Linf = 6.0, 
                                     K = 0.5, 
                                     t_anchor = 0.5,
-                                    C=0.5, ts = 0.5),
-                    low_par = list(Linf = 45, K = 0.01, t_anchor = 0, C = 0, ts = 0),
-                    up_par = list(Linf = 50, K = 1, t_anchor = 1, C = 1, ts = 1))
+                                    C=0.5, 
+                                    ts = 0.5),
+                    low_par = list(Linf = 5.5, K = 0.01, t_anchor = 0, C = 0, ts = 0),
+                    up_par = list(Linf = 6.5, K = 1, t_anchor = 1, C = 1, ts = 1))
 # show results
 res_SA$par; res_SA$Rn_max
 
@@ -328,8 +434,8 @@ res_SA$par; res_SA$Rn_max
 # run ELEFAN with genetic algorithm
 res_GA <- ELEFAN_GA(lfq1new, MA = 5, seasonalised = TRUE, maxiter = 10, 
                     addl.sqrt = TRUE,
-                    low_par = list(Linf = 45, K = 0.01, t_anchor = 0, C = 0, ts = 0),
-                    up_par = list(Linf = 50, K = 1, t_anchor = 1, C = 1, ts = 1),
+                    low_par = list(Linf = 5.5, K = 0.01, t_anchor = 0, C = 0, ts = 0),
+                    up_par = list(Linf = 6.5, K = 1, t_anchor = 1, C = 1, ts = 1),
                     monitor = FALSE)
 # show results
 res_GA$par; res_GA$Rn_max
@@ -339,9 +445,13 @@ res_GA$par; res_GA$Rn_max
 ```{r}
 # plot LFQ and growth curves
 plot(lfqbin, Fname = "rcounts",date.axis = "modern", ylim=c(0,8))
-lt <- lfqFitCurves(lfq1new, par = list(Linf=4.9, K=0.2, 
-                                       t_anchor=0.25, C=0.3, ts=0),
+lt <- lfqFitCurves(lfqbin, par = list(Linf=7.0, K=0.2, 
+                                       t_anchor=0.25, C=2, ts=0),
                    draw = TRUE, col = "grey", lty = 1, lwd=1.5)
+lt <- lfqFitCurves(lfq1new, par = res_SA$par,
+                   draw = TRUE, col = "blue", lty = 1, lwd=1.5)
+lt <- lfqFitCurves(lfq1new, par = res_GA$par,
+                   draw = TRUE, col = "lightblue", lty = 1, lwd=1.5)
 
 ```
 
