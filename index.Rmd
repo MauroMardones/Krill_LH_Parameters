@@ -157,6 +157,10 @@ First thing is get different rater layer to join krill data length
 according different porpoises.
 
 ```{r raster}
+# Cargo linea de costa
+coast <- load_Coastline()
+coast1<- st_as_sf(coast) 
+coast2 = st_transform(coast1, "+proj=latlong +ellps=WGS84")
 # Uso las agrupaciones de Strata
 strata <- st_read("~/DOCAS/Mapas/Antarctic_SHPfiles/Strata.shp",
                 quiet=T)
@@ -175,6 +179,37 @@ ohbio6 <- st_as_sf(length481 %>%
                    coords = c("longitude_set_end", "latitude_set_end"),  
                   crs = "+proj=latlong +ellps=WGS84")
 ```
+Un mapa simple de dstribución y magnitud de los lances con longitudes
+
+```{r maptest, fig.cap="Strata Maps in 48.1"}
+# y testeo el mapa
+ssmap <- ggplot()+
+  geom_sf(data = strata |> 
+            filter(ID != "Outer") |>  
+           mutate(ID = str_replace_all(ID, "Extra", "GS")),color="red")+
+  geom_sf(data = ohbio6 |>
+            drop_na(length_total_cm) |> 
+            filter(Year>2017), 
+          aes(color = length_total_cm)) +
+  geom_text_repel(data = strata |>  
+            filter(ID != "Outer") |>  
+           mutate(ID = str_replace_all(ID, "Extra", "GS")), 
+            aes(x = Labx, y = Laby, 
+                label = ID), 
+            min.segment.length = 0,
+                             box.padding = 2,
+                             max.overlaps = 10)+
+  geom_sf(data = coast2, colour="black", fill=NA)+
+  scale_color_viridis_c(option = "G",
+                        name="Length (cm)")+
+  ylim(230000, 2220000)+
+  xlim(-3095349 , -1858911)+
+  # coord_sf(crs = 32610)+ #sistema de prpyecccion para campos completos
+  coord_sf(crs = 6932)+
+  theme_bw()
+ssmap
+```
+
 
 
 Length composition by Strata CCAMLR to visualization first. First step is group data into to poligons strata.
@@ -185,32 +220,32 @@ sf4 <- st_join(strata, ohbio6)
 ```
 
 
-scattter plot lenght data
-```{r warning=F}
-lentraplot <- ggplot(sf4 %>% 
-                   filter(Year>2000,
-                      ID !="Outer"), 
-               aes(Year, tapro,
-               fill=Month))+
-    geom_point(alpha=0.3, 
-               shape=21, 
-               show.legend = T) +
-    scale_fill_viridis_c(option="G")+
-    geom_hline(yintercept = 4.16,
-               color = "black",
-               linetype  = 2)+
-    stat_smooth(method = "loess",
-                col="red")+
-    theme_bw()+ 
-    facet_wrap(.~ID)+
-    theme(axis.text.x = element_text(angle = 90, hjust = 2))+
-    guides(fill = guide_legend(reverse=F))+
-    
-    ylab("") +
-    xlab("") 
-lentraplot
+Calculating the proportion of records per year and per stratum in a table. This table allows us to establish criteria for defining the strata on which we will analyze krill parameter. We leave out just `JOIN`.
+
+
+```{r}
+# Calcular la proporción
+proporcion <- (round(table(sf5$ID) / sum(table(sf5$ID))*100,2))
+
+# Crear una tabla con las proporciones
+tabla_proporcion <- as.data.frame(proporcion)
+tabla_proporcion$Categoria <- rownames(tabla_proporcion)
+rownames(tabla_proporcion) <- NULL
+
+# Renombrar las columnas
+colnames(tabla_proporcion) <- c("Strata", "%")
+
+# Mostrar la tabla utilizando kbl()
+kbl(tabla_proporcion, 
+    caption = "Proportion length register by Strata")  |> 
+  kable_classic(full_width = F, 
+                html_font = "Cambria") |> 
+  kable_styling(bootstrap_options = "striped", 
+                latex_options = "striped")
 ```
-histogram length data
+
+
+histogram length data to viz in anthor way.
 
 
 ```{r warning=FALSE}
@@ -241,16 +276,16 @@ jzstrata
 Now, must filter the DF
 
 ```{r}
-sf5 <- sf4 %>% 
+sf5 <- sf4 |> 
   dplyr::select(c("ID",
         "date_catchperiod_start",
         "length_total_cm",
         "Year",
         "Month",
         "sex_code",
-         "greenweight_kg")) %>% 
-  mutate(ID = if_else(ID == "Extra", "GERLASHE", ID)) %>% 
-  filter(ID !="Outer") %>% 
+         "greenweight_kg")) |> 
+  mutate(ID = if_else(ID == "Extra", "GERLASHE", ID)) |>  
+  filter(ID !="Outer") |> 
   data.frame()
 ```
 
@@ -274,131 +309,70 @@ RL
 ```
 
 ```{r}
-sf5test <- sf5 %>%
-  filter(Year>2015) %>% 
-  mutate(date_catchperiod_start = as.Date(date_catchperiod_start)) %>%  # Asegurar que la columna de fechas sea de tipo Date
- mutate(monthly_Group = floor_date(date_catchperiod_start, "month")) %>%  # Crear una nueva columna con la fecha agrupada mensualmente
+sf5fil <- sf5 |>
+  filter(Year>2015,
+         ID %in% c("BS", "EI", "GERLASHE", "SSIW")) |>  
+  mutate(date_catchperiod_start = as.Date(date_catchperiod_start)) |>  
+ mutate(monthly_Group = floor_date(date_catchperiod_start, "month")) |>   # New column
   drop_na(length_total_cm) 
-
-
 # Crear una lista para almacenar los resultados de cada ID
 lfq_results <- list()
-
 # Iterar sobre cada ID
-for (id in unique(sf5test$ID)) {
+for (id in unique(sf5fil$ID)) {
   # Filtrar los datos para el ID actual
-  df_id <- sf5test %>% filter(ID == id)
-  
+  df_id <- sf5fil %>% filter(ID == id)
   # Crear un objeto lfq para el ID actual
   lfq <- lfqCreate(data = df_id,
                    Lname = "length_total_cm",
                    Dname = "monthly_Group",
                    bin_size = 0.1)
-  
   # Agregar el resultado a la lista
   lfq_results[[id]] <- lfq
-  
-  # Graficar el objeto lfq
+    # Graficar el objeto lfq
   plot(lfq, Fname = "catch")
 }
 ```
 
 
-```{r}
-# plot raw and restructured LFQ data
-lfqbin <- lfqRestructure(lfq1new , MA = 3, addl.sqrt = TRUE)
-plot(lfqbin, hist.col = c("white", "black"),
-  image.col = c(rep(rgb(1,0.8,0.8),1000), "white", rep(rgb(0.8,0.8,1),1000)),
-  ylim = c(0,max(lfqbin$midLengths+0.5)))
-tmp <- lfqFitCurves(lfqbin, par = list(Linf=6.5, K=0.45, t_anchor=0.1),
-  draw = TRUE, col=4, lty=2)
-
-
-PW <- powell_wetherall(lfqbin, catch_columns = 1:7, reg_int = c(2,9) )
-
-PW$confidenceInt_Linf
-
-```
 
 ```{r}
 # Crear una lista para almacenar los resultados de Powell-Wetherall
 PW_results <- list()
-
 # Iterar sobre cada objeto lfq almacenado en lfq_results
 for (lfq in lfq_results) {
   # Restructurar el objeto lfq
   lfqbin <- lfqRestructure(lfq, MA = 3, addl.sqrt = TRUE)
-  
-  # Graficar el objeto lfq reestructurado
+    # Graficar el objeto lfq reestructurado
   plot(lfqbin, hist.col = c("white", "black"),
-       image.col = c(rep(rgb(1,0.8,0.8),1000), "white", rep(rgb(0.8,0.8,1),1000)),
+       image.col = c(rep(rgb(1,0.8,0.8),1000), "white", 
+                     rep(rgb(0.8,0.8,1),1000)),
        ylim = c(0,max(lfqbin$midLengths+0.5)))
-  
-  # Ajustar curvas al objeto lfq reestructurado
-  tmp <- lfqFitCurves(lfqbin, par = list(Linf=6.5, K=0.45, t_anchor=0.1),
+    # Ajustar curvas al objeto lfq reestructurado
+  tmp <- lfqFitCurves(lfqbin, par = list(Linf=6.5, 
+                                         K=0.45, 
+                                         t_anchor=0.1),
                       draw = TRUE, col=4, lty=2)
-  
-  # Calcular los intervalos de confianza de L_inf usando Powell-Wetherall
+    # Calcular los intervalos de confianza de L_inf usando Powell-Wetherall
   PW <- powell_wetherall(lfqbin, catch_columns = 1:7, reg_int = c(2,9))
-  
-  # Almacenar los resultados de Powell-Wetherall en la lista PW_results
+    # Almacenar los resultados de Powell-Wetherall en la lista PW_results
   PW_results[[length(PW_results) + 1]] <- PW$Linf_est
 }
-
 ```
 ```{r}
-library(kableExtra)
-
-# Crear una lista para almacenar los resultados de Powell-Wetherall
-PW_results <- list()
-
-# Iterar sobre cada objeto lfq almacenado en lfq_results
-for (lfq in lfq_results) {
-  # Restructurar el objeto lfq
-  lfqbin <- lfqRestructure(lfq, MA = 3, addl.sqrt = TRUE)
-  
-  # Ajustar curvas al objeto lfq reestructurado
-  tmp <- lfqFitCurves(lfqbin, par = list(Linf=6.5, K=0.45, t_anchor=0.1),
-                      draw = TRUE, col=4, lty=2)
-  
-  # Calcular los intervalos de confianza de L_inf usando Powell-Wetherall
-  PW <- powell_wetherall(lfqbin, catch_columns = 1:7, reg_int = c(2,9))
-  
-  # Almacenar los resultados de Powell-Wetherall en la lista PW_results
-  PW_results[[length(PW_results) + 1]] <- data.frame(ID = lfq$meta_data$ID,
-                                                      Linf_est = PW$Linf_est,
-                                                      k_est = PW$k_est)
-}
-
-# Unir los resultados en un solo dataframe
-PW_table <- do.call(rbind, PW_results)
-
-# Crear una tabla kbl
-PW_table_kbl <- kbl(PW_table, caption = "Resultados de Powell-Wetherall por ID") %>%
-  kable_classic(full_width = FALSE)
-
-# Visualizar la tabla
-PW_table_kbl
-
-```
-
-
-```{r}
-
 lfqbin2 <- ELEFAN(
-  lfq = lfqbin,  MA = 3,
+  lfq = lfq_results$EI,  MA = 3,
   Linf_range = seq(5.6, 7.5, length.out = 30),
   K_range = exp(seq(log(0.1),log(1), length.out = 30)),
   method = "cross",
-  cross.date = lfqbin$dates[3],
-  cross.midLength = lfqbin$midLengths[5],
+  cross.date = lfq_results$GERLASHE$dates[3],
+  cross.midLength = lfq_results$GERLASHE$midLengths[5],
   contour = TRUE, add.values = FALSE,
   plot = TRUE,
   hide.progressbar = TRUE # change to 'TRUE' to follow algorithm's progression
 )
-
 points(lfqbin2$par["Linf"], lfqbin2$par["K"], pch="*", cex=2, col=2)
 ```
+
 
 ```{r}
 unlist(lfqbin2$par)
@@ -407,7 +381,7 @@ unlist(lfqbin2$par)
 
 ```{r}
 # Response surface analyss
-res_RSA <- ELEFAN(lfqbin , Linf_range = seq(5.5,6.5,1), MA = 3,
+res_RSA <- ELEFAN(lfq_results$EI , Linf_range = seq(5.5,6.5,1), MA = 3,
                   K_range = seq(0.01,2,0.1), addl.sqrt = TRUE,
                   hide.progressbar = TRUE, contour=5)
 
