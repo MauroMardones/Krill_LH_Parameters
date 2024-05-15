@@ -170,7 +170,7 @@ Test Strata SSMU, just to know another way to join data, but this kind of spatia
 
 
 
-## Grouping bio data into stratas
+Grouping bio data into stratas
 
 ```{r ssmu1}
 names(length481)
@@ -179,7 +179,8 @@ ohbio6 <- st_as_sf(length481 %>%
                    coords = c("longitude_set_end", "latitude_set_end"),  
                   crs = "+proj=latlong +ellps=WGS84")
 ```
-Un mapa simple de dstribución y magnitud de los lances con longitudes
+
+## Study Area
 
 ```{r maptest, fig.cap="Strata Maps in 48.1"}
 # y testeo el mapa
@@ -244,6 +245,7 @@ kbl(tabla_proporcion,
                 latex_options = "striped")
 ```
 
+## Data
 
 histogram length data to viz in anthor way.
 
@@ -289,7 +291,7 @@ sf5 <- sf4 |>
   data.frame()
 ```
 
-relacion Logitud peso
+Some exploration in R-L relationship.
 
 ```{r}
 cols <- c("M" = "darkgreen", "F" = "orange")
@@ -298,15 +300,20 @@ RL <- ggplot(sf5 %>%
                       greenweight_kg<0.004),
              aes(x=length_total_cm,
                   y=greenweight_kg,
-             colour=sex_code))+
+             colour=sex_code),
+             alpha=0.3)+
   geom_point()+
-  stat_smooth(method = "loess", 
+  stat_smooth(method = "lm", formula = y~poly(x,2), 
               fullrange = TRUE) + 
-  scale_colour_manual(values=cols)+
+  scale_colour_manual(values=cols,
+                      name="Sex")+
   facet_grid(.~ID)+
   theme_few()
 RL
 ```
+
+
+## Parameters estimation `k` and `L_inf_`
 
 ```{r}
 sf5fil <- sf5 |>
@@ -360,14 +367,16 @@ for (lfq in lfq_results) {
 ```
 ```{r}
 lfqbin2 <- ELEFAN(
-  lfq = lfq_results$EI,  MA = 3,
-  Linf_range = seq(5.6, 7.5, length.out = 30),
-  K_range = exp(seq(log(0.1),log(1), length.out = 30)),
+  lfq = lfq_results$SSIW,  MA = 7,
+  Linf_range = seq(4.5, 7, length.out = 30),
+  K_range = exp(seq(log(0.1),log(2), length.out = 30)),
   method = "cross",
-  cross.date = lfq_results$GERLASHE$dates[3],
-  cross.midLength = lfq_results$GERLASHE$midLengths[5],
-  contour = TRUE, add.values = FALSE,
+  cross.date = lfq_results$SSIW$dates[3],
+  cross.midLength = lfq_results$SSIW$midLengths[5],
+  contour = TRUE, 
+  add.values = FALSE,
   plot = TRUE,
+  agemax = 5,
   hide.progressbar = TRUE # change to 'TRUE' to follow algorithm's progression
 )
 points(lfqbin2$par["Linf"], lfqbin2$par["K"], pch="*", cex=2, col=2)
@@ -381,9 +390,10 @@ unlist(lfqbin2$par)
 
 ```{r}
 # Response surface analyss
-res_RSA <- ELEFAN(lfq_results$EI , Linf_range = seq(5.5,6.5,1), MA = 3,
+res_RSA <- ELEFAN(lfq_results$EI , Linf_range = seq(4,6.5,1), MA = 5,
                   K_range = seq(0.01,2,0.1), addl.sqrt = TRUE,
-                  hide.progressbar = TRUE, contour=5)
+                  hide.progressbar = TRUE, contour=5,
+                  plot=TRUE)
 
 # show results
 res_RSA$par; res_RSA$Rn_max
@@ -418,8 +428,8 @@ res_GA$par; res_GA$Rn_max
 
 ```{r}
 # plot LFQ and growth curves
-plot(lfqbin, Fname = "rcounts",date.axis = "modern", ylim=c(0,8))
-lt <- lfqFitCurves(lfqbin, par = list(Linf=7.0, K=0.2, 
+plot(res_RSA, Fname = "rcounts",date.axis = "modern", ylim=c(0,8))
+lt <- lfqFitCurves(res_RSA, par = list(Linf=7.0, K=0.2, 
                                        t_anchor=0.25, C=2, ts=0),
                    draw = TRUE, col = "grey", lty = 1, lwd=1.5)
 lt <- lfqFitCurves(lfq1new, par = res_SA$par,

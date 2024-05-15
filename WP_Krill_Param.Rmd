@@ -1,0 +1,125 @@
+---
+title: "Derive growth parameters of the von Bertalanffy growth function (VBGF) from LFQ data"
+subtitle: "Working Paper to be submitted in a CCAMLR EMM-WG 2024"
+author:
+  - Mardones Mauricio^[Universidad de Magallanes, mamardon@umag.cl]
+  - César Cárdenas^[Instituto Antártico Chileno]
+  - Francisco Santa Cruz ^[Instituto Antártico Chileno]
+  - Lucas Krüger ^[Instituto Antártico Chileno]
+date:  "`r format(Sys.time(), '%d %B, %Y')`"
+output:
+  bookdown::pdf_document2:
+    fig_caption: yes
+    number_sections: false
+bibliography: param.bib
+#csl: apa.csl
+csl: apa.csl
+link-citations: yes
+linkcolor: blue
+always_allow_html: true
+toc: true
+toc_deep: 3
+header-includes:
+- \fontsize{12}{22}
+- \selectfont
+---
+
+\newpage
+
+
+```{r setup1, echo=FALSE}
+rm(list = ls())
+knitr::opts_chunk$set(echo = FALSE,
+                      message = FALSE,
+                      warning = FALSE,
+                      fig.align = 'center',
+                      fig.pos = "H",
+                      dev = 'jpeg',
+                      dpi = 300)
+#XQuartz is a mess, put this in your onload to default to cairo instead
+options(bitmapType = "cairo") 
+# (https://github.com/tidyverse/ggplot2/issues/2655)
+# Lo mapas se hacen mas rapido
+```
+
+```{r message=FALSE}
+## Installing the Package
+#The LBSPR package is now available on CRAN:
+#install.packages("LBSPR")
+#install.packages("devtools")
+#devtools::install_github("AdrianHordyk/LBSPR")
+###load the package
+library(devtools)#to install_github
+library(dplyr)
+library(tidyr)
+library(ggplot2)
+library(stringr)
+library(ggpubr)
+library(kableExtra)
+library(hrbrthemes)
+library(ggthemes)
+```
+
+```{r}
+My_theme <- theme(axis.text.y = element_blank(),
+                  axis.ticks.y = element_blank(),
+                  axis.ticks.x=element_blank(),
+                  panel.background = element_blank(),
+                  panel.border = element_rect(fill = NA, size = 1),
+                  strip.background = element_rect(fill = "white", 
+                                                  color = "white", 
+                                                  size = 1),
+                  text = element_text(size = 14),
+                  panel.grid.major = element_line(colour = "white", 
+                                                  size = 0.1),
+                  panel.grid.minor = element_line(colour = "white", 
+                                                  size = 0.1))
+```
+
+# ABSTRACT
+
+One approach for understanding the dynamics of krill populations in the Antarctic Peninsula is through the analysis of empirical data, such as size composition obtained from fishery monitoring. By studying this data over multiple years and considering life history parameters, we can assess the intrinsic productivity of krill and potential changes over time and in different areas. To achieve this, we have employed the Length-Based Spawning Potential Ratio (LBSPR) method. This method allows us to estimate the reproductive potential of the population based on current exploitation levels, as well as its comparison to a virgin condition. By identifying reference points specifically related to reproductive potential, the LBSPR method provides insights about the state of the krill population. Recognizing spatial and temporal changes in the intrinsic productivity of krill, as indicated by their reproductive potential, is crucial for the understanding of the unique characteristics of this species. Moreover, these findings have important implications for management strategies within the context of the Commission for the Conservation of Antarctic Marine Living Resources (CCAMLR). By integrating knowledge of krill dynamics and its reproductive potential, advise can be produced to ensure the sustainable management of krill populations in subarea 48.1.
+
+*Keywords: Krill populations, dynamic population, size compositions, Spawning Potential Ratio (SPR), Management, CCAMLR.*
+
+\newpage
+
+# INTRODUCTION
+
+The western Antarctic Peninsula ecosystem is a critical region of the Southern Ocean for populations of Antarctic krill (*Euphausia superba*; hereafter krill) serving as a major spawning and recruitment area and as an overwintering hotspot, especially within Bransfield Strait. Over the last 40 years, climate driven changes have resulted in warming waters, declines in seasonal sea ice extent and duration [@Stammerjohn2008a; @Stammerjohn2008], changing trends phytoplankton productivity [@Saba2014; @Siegel2013].
+
+Additionally, changes have impacted the population dynamics of krill, resulting in distribution changes with consequent contraction of the population in the southwest Atlantic Ocean toward the peninsula [@Atkinson2009]. In addition, changes in the population structure have also verified in krill in recent years [@Reiss2020]. The mentioned temporal and spatial changes have implications for the reproductive potential of the species and this, therefore, for intrinsic productivity.
+
+One way to understand and measure changes in intrinsic productivity is through assessing the ratio of krill reproductive potential. There are many length-based assessment methods to understand this changes between years [@Rudd2017a; @Froese2018; @Hordyk2016; @Canales2021]. On the other hand, one of the advantages of these methods is to use one of the most reliable and abundant sources in the sampling of fishing activities, such as size structures [@Canales2021].
+
+Spatial and temporal changes in the population structure have been a relevant issue within CCAMLR (Commission for the Conservation of Antarctic Marine Living Resources) fisheries management schemes. In this sense, new more localized or reduced spatial scales have been proposed to identify changes in these scales. Despite these proposals to identify krill population dynamics at a finer level, these schemes are not yet operational for decision making [@Hill2016; @McBride2021].
+
+We then propose to identify differences in krill reproductive potential at the finer spatial and temporal scales, propose a specific reference point considering the spatial scale, and ultimately provide recommendations for sustainable management of the krill fishery through intrinsic productivity in Subarea 48.1 on the Antarctic Peninsula in the Southern Ocean. @Perry2020
+
+\newpage
+
+# 2. METHODOLOGY
+
+## 2.1. Study area
+
+The study area includes subarea 48.1, which is one of the sectors where today the largest amount of krill fishing is concentrated [@McBride2021; @Atkinson2022; @SantaCruz2022]. In order to have a finest spatial definition of krill dynamics population, we will analyze the differences between the management strata defined in WG-EMM-2021/05 Rev. (@Dornam2021), namely Brainsfield Strait, Elephant Island, Extra, Joinville Island and South West (hereafter BS, EI, Extra, JOIN and SSIW respectively) (Figure \ref{Figure 1})
+
+```{r Figure 1, eval=FALSE, out.width='60%', fig.cap="\\label{Figure 1} Subarea 48.1 and management strata considered in the spatio-temporal analysis of intrinsic productivity of Krill (BS=Brainsfield Strait, EI= Elephant Island, Extra= Extra, JOIN= Joinville Island, SSWI= South West)"}
+knitr::include_graphics('Strata2.png')
+```
+
+## 2.2. Monitoring Data (SISO Program)
+
+For this analysis, data from the monitoring of the krill fishery were used, which have been systematically collected on board fishing vessels by the CCAMLR SISO (Scheme of International Scientific Observation) program. Krill sizes compositions were obtained from the entire area 48.1, which was combined in each management stratum defined at 2.1 section (Figure \ref{Figure 2}).
+
+```{r Figure 2, eval=FALSE, out.width='100%', fig.cap="\\label{Figure 2}Sizes compositions from SISO program monitoring krill fishery by strata (BS=Brainsfield Strait, EI= Elephant Island, Extra= Extra, JOIN= Joinville Island, SSWI= South West). Red line represent recruit size"}
+knitr::include_graphics('tallastrata.png')
+```
+
+The information gaps (years without sizes composition data) are not calculated because there is no autocorrelation between years, but singular estimators over time.
+
+## 2.3. Biological and fishery parameters krill
+
+\newpage
+
+# REFERENCES
