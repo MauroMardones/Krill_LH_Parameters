@@ -1,6 +1,6 @@
 ---
-title: "Krill Life Parammetrs estimation in a context spatial in WAP"
-subtitle: "Supporting analysis to incorporate in Krill stock assessment frameworks"
+title: "Derive growth parameters and Natural Mortality in krill considering spatial heterogenity"
+subtitle: "Working Paper to be submitted in a CCAMLR EMM-WG 2024"
 author: "Mardones, M; Cárdenas, C."
 date:  "16 May, 2024"
 bibliography: param.bib
@@ -363,9 +363,9 @@ kbl(tabla_proporcion,
 
 ## Parameters estimation `k` and `L_inf_`
 
-### Method `ELEFAN` (@Tobias2017)
+### Method `ELEFAN` 
 
-
+(@Tobias2017)
 
 
 
@@ -531,12 +531,12 @@ res_SAsswi <- ELEFAN_SA(lfq_results$SSIW,
 ```
 ## Simulated annealing is running. 
 ## This will take approximately 0.5 minutes.
-## timeSpan = 30.011048 maxTime = 30
-## Emini is: -0.2661270789
+## timeSpan = 30.005021 maxTime = 30
+## Emini is: -0.2844106025
 ## xmini are:
-## 5.328667012 0.8705196602 0.2853670418 0.4288634807 0.1844906621 
-## Totally it used 30.011068 secs
-## No. of function call is: 1092
+## 5.324971939 0.912516579 0.6134328698 0.09638525543 0.3336850045 
+## Totally it used 30.005036 secs
+## No. of function call is: 1649
 ```
 
 
@@ -581,16 +581,13 @@ parsswi %>%
   kbl(booktabs = T,
       position="ht!",
     caption = "Parametres LH to SSWI") %>%
-  kable_paper("hover", 
-              full_width = F)%>%
-  kable_styling(latex_options = c("striped",
+    kable_styling(latex_options = c("striped",
                                   "condensed"),
-                full_width = FALSE,
-                font_size=9)
+                full_width = FALSE)
 ```
 
-<table class=" lightable-paper lightable-hover table" style='color: black; font-family: "Arial Narrow", arial, helvetica, sans-serif; width: auto !important; margin-left: auto; margin-right: auto; font-size: 9px; color: black; width: auto !important; margin-left: auto; margin-right: auto;'>
-<caption style="font-size: initial !important;">Parametres LH to SSWI</caption>
+<table class="table" style="color: black; width: auto !important; margin-left: auto; margin-right: auto;">
+<caption>Parametres LH to SSWI</caption>
  <thead>
   <tr>
    <th style="text-align:left;">   </th>
@@ -614,25 +611,25 @@ parsswi %>%
   </tr>
   <tr>
    <td style="text-align:left;"> GAsswi </td>
-   <td style="text-align:right;"> 5.879 </td>
-   <td style="text-align:right;"> 0.596 </td>
-   <td style="text-align:right;"> 0.331 </td>
-   <td style="text-align:right;"> 0.463 </td>
-   <td style="text-align:right;"> 0.475 </td>
-   <td style="text-align:right;"> 1.314 </td>
+   <td style="text-align:right;"> 5.989 </td>
+   <td style="text-align:right;"> 0.579 </td>
+   <td style="text-align:right;"> 0.532 </td>
+   <td style="text-align:right;"> 0.859 </td>
+   <td style="text-align:right;"> 0.880 </td>
+   <td style="text-align:right;"> 1.318 </td>
   </tr>
   <tr>
    <td style="text-align:left;"> SAsswi </td>
-   <td style="text-align:right;"> 5.329 </td>
-   <td style="text-align:right;"> 0.871 </td>
-   <td style="text-align:right;"> 0.285 </td>
-   <td style="text-align:right;"> 0.429 </td>
-   <td style="text-align:right;"> 0.184 </td>
-   <td style="text-align:right;"> 1.393 </td>
+   <td style="text-align:right;"> 5.325 </td>
+   <td style="text-align:right;"> 0.913 </td>
+   <td style="text-align:right;"> 0.613 </td>
+   <td style="text-align:right;"> 0.096 </td>
+   <td style="text-align:right;"> 0.334 </td>
+   <td style="text-align:right;"> 1.413 </td>
   </tr>
 </tbody>
 </table>
-#### Parametrs to `EI`
+#### Parameters to `EI`
 
 
 ```r
@@ -689,12 +686,12 @@ res_SAei <- ELEFAN_SA(lfq_results$EI,
 ```
 ## Simulated annealing is running. 
 ## This will take approximately 0.5 minutes.
-## timeSpan = 30.035548 maxTime = 30
+## timeSpan = 30.001442 maxTime = 30
 ## Emini is: -0.2111109108
 ## xmini are:
 ## 5.863710068 0.9813904597 0.873453021 0.9993372839 0.5819024704 
-## Totally it used 30.035574 secs
-## No. of function call is: 1329
+## Totally it used 30.001453 secs
+## No. of function call is: 2048
 ```
 
 
@@ -736,64 +733,7 @@ parei <- round(rbind(RSAei, GAei, SAei),3)
 
 
 
-```r
-parei %>%
-  kbl(booktabs = T,
-      position="ht!",
-    caption = "Parametres LH to Elephand Island") %>%
-  kable_paper("hover", 
-              full_width = F)%>%
-  kable_styling(latex_options = c("striped",
-                                  "condensed"),
-                full_width = FALSE,
-                font_size=9)
-```
-
-<table class=" lightable-paper lightable-hover table" style='color: black; font-family: "Arial Narrow", arial, helvetica, sans-serif; width: auto !important; margin-left: auto; margin-right: auto; font-size: 9px; color: black; width: auto !important; margin-left: auto; margin-right: auto;'>
-<caption style="font-size: initial !important;">Parametres LH to Elephand Island</caption>
- <thead>
-  <tr>
-   <th style="text-align:left;">   </th>
-   <th style="text-align:right;"> Linf </th>
-   <th style="text-align:right;"> K </th>
-   <th style="text-align:right;"> t_anchor </th>
-   <th style="text-align:right;"> C </th>
-   <th style="text-align:right;"> ts </th>
-   <th style="text-align:right;"> phiL </th>
-  </tr>
- </thead>
-<tbody>
-  <tr>
-   <td style="text-align:left;"> RSAei </td>
-   <td style="text-align:right;"> 5.879 </td>
-   <td style="text-align:right;"> 0.470 </td>
-   <td style="text-align:right;"> 0.750 </td>
-   <td style="text-align:right;"> 0.500 </td>
-   <td style="text-align:right;"> 0.500 </td>
-   <td style="text-align:right;"> 1.211 </td>
-  </tr>
-  <tr>
-   <td style="text-align:left;"> GAei </td>
-   <td style="text-align:right;"> 5.737 </td>
-   <td style="text-align:right;"> 0.595 </td>
-   <td style="text-align:right;"> 0.960 </td>
-   <td style="text-align:right;"> 0.618 </td>
-   <td style="text-align:right;"> 0.528 </td>
-   <td style="text-align:right;"> 1.292 </td>
-  </tr>
-  <tr>
-   <td style="text-align:left;"> SAei </td>
-   <td style="text-align:right;"> 5.864 </td>
-   <td style="text-align:right;"> 0.981 </td>
-   <td style="text-align:right;"> 0.873 </td>
-   <td style="text-align:right;"> 0.999 </td>
-   <td style="text-align:right;"> 0.582 </td>
-   <td style="text-align:right;"> 1.528 </td>
-  </tr>
-</tbody>
-</table>
-
-#### Parametrs to `BS`
+#### Parameters to `BS`
 
 
 ```r
@@ -850,12 +790,12 @@ res_SAbs <- ELEFAN_SA(lfq_results$BS,
 ```
 ## Simulated annealing is running. 
 ## This will take approximately 0.5 minutes.
-## timeSpan = 30.019744 maxTime = 30
+## timeSpan = 30.00739 maxTime = 30
 ## Emini is: -0.3184663901
 ## xmini are:
 ## 5.310221989 0.8441457965 0.2786562045 0.3598986657 0.9663543715 
-## Totally it used 30.019766 secs
-## No. of function call is: 1190
+## Totally it used 30.007403 secs
+## No. of function call is: 1829
 ```
 
 
@@ -884,7 +824,7 @@ res_GAbs <- ELEFAN_GA(lfq_results$BS,
 ## Genetic algorithm is running. This might take some time.
 ```
 
-<img src="index_files/figure-html/unnamed-chunk-25-1.jpeg" style="display: block; margin: auto;" />
+<img src="index_files/figure-html/unnamed-chunk-24-1.jpeg" style="display: block; margin: auto;" />
 
 
 ```r
@@ -893,64 +833,9 @@ RSAbs <- unlist(res_RSAbs$par)
 GAbs <- unlist(res_GAbs$par)
 SAbs <- unlist(res_SAbs$par)
 parbs <- round(rbind(RSAbs, GAbs, SAbs),3)
-
-parbs %>%
-  kbl(booktabs = T,
-      position="ht!",
-    caption = "Parametres LH to BRANSFIELD STRAIT") %>%
-  kable_paper("hover", 
-              full_width = F)%>%
-  kable_styling(latex_options = c("striped",
-                                  "condensed"),
-                full_width = FALSE,
-                font_size=9)
 ```
 
-<table class=" lightable-paper lightable-hover table" style='color: black; font-family: "Arial Narrow", arial, helvetica, sans-serif; width: auto !important; margin-left: auto; margin-right: auto; font-size: 9px; color: black; width: auto !important; margin-left: auto; margin-right: auto;'>
-<caption style="font-size: initial !important;">Parametres LH to BRANSFIELD STRAIT</caption>
- <thead>
-  <tr>
-   <th style="text-align:left;">   </th>
-   <th style="text-align:right;"> Linf </th>
-   <th style="text-align:right;"> K </th>
-   <th style="text-align:right;"> t_anchor </th>
-   <th style="text-align:right;"> C </th>
-   <th style="text-align:right;"> ts </th>
-   <th style="text-align:right;"> phiL </th>
-  </tr>
- </thead>
-<tbody>
-  <tr>
-   <td style="text-align:left;"> RSAbs </td>
-   <td style="text-align:right;"> 5.448 </td>
-   <td style="text-align:right;"> 0.640 </td>
-   <td style="text-align:right;"> 0.790 </td>
-   <td style="text-align:right;"> 0.500 </td>
-   <td style="text-align:right;"> 0.500 </td>
-   <td style="text-align:right;"> 1.279 </td>
-  </tr>
-  <tr>
-   <td style="text-align:left;"> GAbs </td>
-   <td style="text-align:right;"> 5.297 </td>
-   <td style="text-align:right;"> 0.879 </td>
-   <td style="text-align:right;"> 0.428 </td>
-   <td style="text-align:right;"> 0.654 </td>
-   <td style="text-align:right;"> 0.516 </td>
-   <td style="text-align:right;"> 1.392 </td>
-  </tr>
-  <tr>
-   <td style="text-align:left;"> SAbs </td>
-   <td style="text-align:right;"> 5.310 </td>
-   <td style="text-align:right;"> 0.844 </td>
-   <td style="text-align:right;"> 0.279 </td>
-   <td style="text-align:right;"> 0.360 </td>
-   <td style="text-align:right;"> 0.966 </td>
-   <td style="text-align:right;"> 1.377 </td>
-  </tr>
-</tbody>
-</table>
-
-#### Parametrs to `GERLASHE`
+#### Parameters to `GERLASHE`
 
 
 ```r
@@ -1007,12 +892,12 @@ res_SAgs <- ELEFAN_SA(lfq_results$GERLASHE,
 ```
 ## Simulated annealing is running. 
 ## This will take approximately 0.5 minutes.
-## timeSpan = 30.003085 maxTime = 30
-## Emini is: -0.290322014
+## timeSpan = 30.004488 maxTime = 30
+## Emini is: -0.3892859855
 ## xmini are:
-## 5.624068536 0.9826401418 0.7312699817 0.3292821422 0.6789067537 
-## Totally it used 30.003104 secs
-## No. of function call is: 1593
+## 5.28623276 0.9116002417 0.3847553197 0.06077500898 0.3120612055 
+## Totally it used 30.0045 secs
+## No. of function call is: 2521
 ```
 
 
@@ -1041,7 +926,7 @@ res_GAgs <- ELEFAN_GA(lfq_results$GERLASHE,
 ## Genetic algorithm is running. This might take some time.
 ```
 
-<img src="index_files/figure-html/unnamed-chunk-29-1.jpeg" style="display: block; margin: auto;" />
+<img src="index_files/figure-html/unnamed-chunk-28-1.jpeg" style="display: block; margin: auto;" />
 
 
 ```r
@@ -1050,21 +935,23 @@ RSAgs <- unlist(res_RSAgs$par)
 GAgs <- unlist(res_GAgs$par)
 SAgs <- unlist(res_SAgs$par)
 pargs <- round(rbind(RSAgs, GAgs, SAgs),3)
+```
+total Table with `L_inf_` and `K`
 
-pargs %>%
+
+```r
+t_k_linf <- rbind(parsswi, parei, parbs, pargs)
+t_k_linf %>%
   kbl(booktabs = T,
       position="ht!",
-    caption = "Parametres LH to GERLASHE") %>%
-  kable_paper("hover", 
-              full_width = F)%>%
+    caption = "Parametres LH in different strata with 3 types of algoritms") %>%
   kable_styling(latex_options = c("striped",
                                   "condensed"),
-                full_width = FALSE,
-                font_size=9)
+                full_width = FALSE)
 ```
 
-<table class=" lightable-paper lightable-hover table" style='color: black; font-family: "Arial Narrow", arial, helvetica, sans-serif; width: auto !important; margin-left: auto; margin-right: auto; font-size: 9px; color: black; width: auto !important; margin-left: auto; margin-right: auto;'>
-<caption style="font-size: initial !important;">Parametres LH to GERLASHE</caption>
+<table class="table" style="color: black; width: auto !important; margin-left: auto; margin-right: auto;">
+<caption>Parametres LH in different strata with 3 types of algoritms</caption>
  <thead>
   <tr>
    <th style="text-align:left;">   </th>
@@ -1078,6 +965,87 @@ pargs %>%
  </thead>
 <tbody>
   <tr>
+   <td style="text-align:left;"> RSAsswi </td>
+   <td style="text-align:right;"> 5.448 </td>
+   <td style="text-align:right;"> 0.640 </td>
+   <td style="text-align:right;"> 0.790 </td>
+   <td style="text-align:right;"> 0.500 </td>
+   <td style="text-align:right;"> 0.500 </td>
+   <td style="text-align:right;"> 1.279 </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> GAsswi </td>
+   <td style="text-align:right;"> 5.989 </td>
+   <td style="text-align:right;"> 0.579 </td>
+   <td style="text-align:right;"> 0.532 </td>
+   <td style="text-align:right;"> 0.859 </td>
+   <td style="text-align:right;"> 0.880 </td>
+   <td style="text-align:right;"> 1.318 </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> SAsswi </td>
+   <td style="text-align:right;"> 5.325 </td>
+   <td style="text-align:right;"> 0.913 </td>
+   <td style="text-align:right;"> 0.613 </td>
+   <td style="text-align:right;"> 0.096 </td>
+   <td style="text-align:right;"> 0.334 </td>
+   <td style="text-align:right;"> 1.413 </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> RSAei </td>
+   <td style="text-align:right;"> 5.879 </td>
+   <td style="text-align:right;"> 0.470 </td>
+   <td style="text-align:right;"> 0.750 </td>
+   <td style="text-align:right;"> 0.500 </td>
+   <td style="text-align:right;"> 0.500 </td>
+   <td style="text-align:right;"> 1.211 </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> GAei </td>
+   <td style="text-align:right;"> 5.301 </td>
+   <td style="text-align:right;"> 0.891 </td>
+   <td style="text-align:right;"> 0.435 </td>
+   <td style="text-align:right;"> 0.359 </td>
+   <td style="text-align:right;"> 0.570 </td>
+   <td style="text-align:right;"> 1.399 </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> SAei </td>
+   <td style="text-align:right;"> 5.864 </td>
+   <td style="text-align:right;"> 0.981 </td>
+   <td style="text-align:right;"> 0.873 </td>
+   <td style="text-align:right;"> 0.999 </td>
+   <td style="text-align:right;"> 0.582 </td>
+   <td style="text-align:right;"> 1.528 </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> RSAbs </td>
+   <td style="text-align:right;"> 5.448 </td>
+   <td style="text-align:right;"> 0.640 </td>
+   <td style="text-align:right;"> 0.790 </td>
+   <td style="text-align:right;"> 0.500 </td>
+   <td style="text-align:right;"> 0.500 </td>
+   <td style="text-align:right;"> 1.279 </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> GAbs </td>
+   <td style="text-align:right;"> 6.032 </td>
+   <td style="text-align:right;"> 0.673 </td>
+   <td style="text-align:right;"> 0.420 </td>
+   <td style="text-align:right;"> 0.431 </td>
+   <td style="text-align:right;"> 0.811 </td>
+   <td style="text-align:right;"> 1.389 </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> SAbs </td>
+   <td style="text-align:right;"> 5.310 </td>
+   <td style="text-align:right;"> 0.844 </td>
+   <td style="text-align:right;"> 0.279 </td>
+   <td style="text-align:right;"> 0.360 </td>
+   <td style="text-align:right;"> 0.966 </td>
+   <td style="text-align:right;"> 1.377 </td>
+  </tr>
+  <tr>
    <td style="text-align:left;"> RSAgs </td>
    <td style="text-align:right;"> 5.448 </td>
    <td style="text-align:right;"> 0.640 </td>
@@ -1088,24 +1056,25 @@ pargs %>%
   </tr>
   <tr>
    <td style="text-align:left;"> GAgs </td>
-   <td style="text-align:right;"> 5.405 </td>
-   <td style="text-align:right;"> 0.746 </td>
-   <td style="text-align:right;"> 0.470 </td>
-   <td style="text-align:right;"> 0.575 </td>
-   <td style="text-align:right;"> 0.499 </td>
-   <td style="text-align:right;"> 1.338 </td>
+   <td style="text-align:right;"> 5.518 </td>
+   <td style="text-align:right;"> 0.593 </td>
+   <td style="text-align:right;"> 0.611 </td>
+   <td style="text-align:right;"> 0.732 </td>
+   <td style="text-align:right;"> 0.454 </td>
+   <td style="text-align:right;"> 1.256 </td>
   </tr>
   <tr>
    <td style="text-align:left;"> SAgs </td>
-   <td style="text-align:right;"> 5.624 </td>
-   <td style="text-align:right;"> 0.983 </td>
-   <td style="text-align:right;"> 0.731 </td>
-   <td style="text-align:right;"> 0.329 </td>
-   <td style="text-align:right;"> 0.679 </td>
-   <td style="text-align:right;"> 1.492 </td>
+   <td style="text-align:right;"> 5.286 </td>
+   <td style="text-align:right;"> 0.912 </td>
+   <td style="text-align:right;"> 0.385 </td>
+   <td style="text-align:right;"> 0.061 </td>
+   <td style="text-align:right;"> 0.312 </td>
+   <td style="text-align:right;"> 1.406 </td>
   </tr>
 </tbody>
 </table>
+
 
 ### Method NO LINEAR MODEL 
 
@@ -1155,6 +1124,147 @@ plot(mod2_weibull)
 # fit a Normal mixture model (equal variance)
 mod1_ev = mixfit(sf6$length_total_cm, ncomp = 2, ev = TRUE)
 ```
+
+## Natural Mortality in Krill
+
+In this exercises different bioanalogic methods are tested with General Algoritm
+
+```r
+MSSWI <- c(res_GAsswi$par, list(agemax = res_RSAsswi$agemax))
+# use the function M_empirical to estimate natural mortality
+Msswi <- M_empirical(Linf = MSSWI$Linf, K_l = MSSWI$K, 
+                  tmax = MSSWI$agemax, temp = 5,
+                  tm50 = 2,
+                  method = c("Pauly_Linf", "Hoenig", 
+                            "Hoenig",
+                             "AlversonCarney",
+                             "RikhterEfanov"
+                             ))
+# Bransfield
+BS <- c(res_GAbs$par, list(agemax = res_RSAbs$agemax))
+
+# use the function M_empirical to estimate natural mortality
+Mbs <- M_empirical(Linf = BS$Linf, K_l = BS$K, 
+                  tmax = BS$agemax, temp = 5,
+                  tm50 = 2,
+                  method = c("Pauly_Linf", "Hoenig", 
+                              "Hoenig",
+                             "AlversonCarney",
+                             "RikhterEfanov"
+                             ))
+# GERLASHE
+GS <- c(res_GAgs$par, list(agemax = res_RSAgs$agemax))
+
+# use the function M_empirical to estimate natural mortality
+Mgs <- M_empirical(Linf = GS$Linf, K_l = GS$K, 
+                  tmax = GS$agemax, temp = 5,
+                   tm50 = 2,
+                  method = c("Pauly_Linf", "Hoenig", 
+                             "Hoenig",
+                             "AlversonCarney",
+                             "RikhterEfanov"
+                             ))
+# Elephand Island
+MEI <- c(res_GAei$par, list(agemax = res_RSAei$agemax))
+
+# use the function M_empirical to estimate natural mortality
+Mei <- M_empirical(Linf = MEI$Linf, K_l = MEI$K, 
+                  tmax = MEI$agemax, temp = 5,
+                  tm50 = 2,
+                  method = c("Pauly_Linf", "Hoenig", 
+                             "Hoenig",
+                             "AlversonCarney",
+                             "RikhterEfanov"
+                             ))
+```
+
+
+```r
+# junto las bases
+
+Total_M <- cbind(Mei, Mbs, Mgs, Msswi)
+colnames(Total_M) <- c("EI", "BS" , "GS", "SSWI")
+mean <- colMeans(Total_M, na.rm = TRUE)
+# Agregar los promedios como una nueva fila al final del array
+Total_M_Mean <- rbind(Total_M, Mean = mean)
+```
+
+
+
+```r
+Total_M_Mean  %>%
+  kbl(booktabs = T,
+      position="ht!",
+    caption = "Estimated M by Strata") %>%
+  kable_styling(latex_options = c("striped",
+                                  "condensed"),
+                full_width = FALSE)
+```
+
+<table class="table" style="color: black; width: auto !important; margin-left: auto; margin-right: auto;">
+<caption>Estimated M by Strata</caption>
+ <thead>
+  <tr>
+   <th style="text-align:left;">   </th>
+   <th style="text-align:right;"> EI </th>
+   <th style="text-align:right;"> BS </th>
+   <th style="text-align:right;"> GS </th>
+   <th style="text-align:right;"> SSWI </th>
+  </tr>
+ </thead>
+<tbody>
+  <tr>
+   <td style="text-align:left;"> Alverson and Carney (1975) </td>
+   <td style="text-align:right;"> 0.6030 </td>
+   <td style="text-align:right;"> 0.7790 </td>
+   <td style="text-align:right;"> 0.8530 </td>
+   <td style="text-align:right;"> 0.8660 </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> Hoenig (1983) - Joint Equation </td>
+   <td style="text-align:right;"> 0.8690 </td>
+   <td style="text-align:right;"> 0.8690 </td>
+   <td style="text-align:right;"> 0.8690 </td>
+   <td style="text-align:right;"> 0.8690 </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> Hoenig (1983) - Fish Equation </td>
+   <td style="text-align:right;"> 0.8470 </td>
+   <td style="text-align:right;"> 0.8470 </td>
+   <td style="text-align:right;"> 0.8470 </td>
+   <td style="text-align:right;"> 0.8470 </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> Pauly (1980) - Length Equation </td>
+   <td style="text-align:right;"> 1.2090 </td>
+   <td style="text-align:right;"> 0.9710 </td>
+   <td style="text-align:right;"> 0.9160 </td>
+   <td style="text-align:right;"> 0.8820 </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> Rikhter and Efanov (1976) </td>
+   <td style="text-align:right;"> 0.7680 </td>
+   <td style="text-align:right;"> 0.7680 </td>
+   <td style="text-align:right;"> 0.7680 </td>
+   <td style="text-align:right;"> 0.7680 </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> NA </td>
+   <td style="text-align:right;"> NA </td>
+   <td style="text-align:right;"> NA </td>
+   <td style="text-align:right;"> NA </td>
+   <td style="text-align:right;"> NA </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> Mean </td>
+   <td style="text-align:right;"> 0.8592 </td>
+   <td style="text-align:right;"> 0.8468 </td>
+   <td style="text-align:right;"> 0.8506 </td>
+   <td style="text-align:right;"> 0.8464 </td>
+  </tr>
+</tbody>
+</table>
+
 
 # References
 

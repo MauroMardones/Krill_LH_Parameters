@@ -1,6 +1,6 @@
 ---
-title: "Krill Life Parammetrs estimation in a context spatial in WAP"
-subtitle: "Supporting analysis to incorporate in Krill stock assessment frameworks"
+title: "Derive growth parameters and Natural Mortality in krill considering spatial heterogenity"
+subtitle: "Working Paper to be submitted in a CCAMLR EMM-WG 2024"
 author: "Mardones, M; Cárdenas, C."
 date:  "`r format(Sys.time(), '%d %B, %Y')`"
 bibliography: param.bib
@@ -63,13 +63,8 @@ library(mixR)
 library(CCAMLRGIS)
 ```
 
-# Background
 
 # Methodology
-
-
-
-A important piece of information for a stock evaluation refers to the biological components such as average sizes and weights across areas and years. To do this, we will explore the biological data and prepare the output to add it into stock assessment integrate model [@Methot2013].
 
 The object `ohbio2` come from data exploration analysis in data request
 CCAMLR data. This objetc have bio information from krill.
@@ -437,15 +432,12 @@ parsswi %>%
   kbl(booktabs = T,
       position="ht!",
     caption = "Parametres LH to SSWI") %>%
-  kable_paper("hover", 
-              full_width = F)%>%
-  kable_styling(latex_options = c("striped",
+    kable_styling(latex_options = c("striped",
                                   "condensed"),
-                full_width = FALSE,
-                font_size=11)
+                full_width = FALSE)
 
 ```
-#### Parametrs to `EI`
+#### Parameters to `EI`
 
 ```{r}
 # Response surface analyss
@@ -521,21 +513,8 @@ parei <- round(rbind(RSAei, GAei, SAei),3)
 ```
 
 
-```{r}
-parei %>%
-  kbl(booktabs = T,
-      position="ht!",
-    caption = "Parametres LH to Elephand Island") %>%
-  kable_paper("hover", 
-              full_width = F)%>%
-  kable_styling(latex_options = c("striped",
-                                  "condensed"),
-                full_width = FALSE,
-                font_size=9)
 
-```
-
-#### Parametrs to `BS`
+#### Parameters to `BS`
 
 ```{r}
 # Response surface analyss
@@ -609,20 +588,9 @@ GAbs <- unlist(res_GAbs$par)
 SAbs <- unlist(res_SAbs$par)
 parbs <- round(rbind(RSAbs, GAbs, SAbs),3)
 
-parbs %>%
-  kbl(booktabs = T,
-      position="ht!",
-    caption = "Parametres LH to BRANSFIELD STRAIT") %>%
-  kable_paper("hover", 
-              full_width = F)%>%
-  kable_styling(latex_options = c("striped",
-                                  "condensed"),
-                full_width = FALSE,
-                font_size=9)
-
 ```
 
-#### Parametrs to `GERLASHE`
+#### Parameters to `GERLASHE`
 
 ```{r}
 # Response surface analyss
@@ -696,27 +664,29 @@ GAgs <- unlist(res_GAgs$par)
 SAgs <- unlist(res_SAgs$par)
 pargs <- round(rbind(RSAgs, GAgs, SAgs),3)
 
-pargs %>%
+```
+total Table with `L_inf_` and `K`
+
+```{r}
+
+t_k_linf <- rbind(parsswi, parei, parbs, pargs)
+t_k_linf %>%
   kbl(booktabs = T,
       position="ht!",
-    caption = "Parametres LH to GERLASHE") %>%
-  kable_paper("hover", 
-              full_width = F)%>%
+    caption = "Parametres LH in different strata with 3 types of algoritms") %>%
   kable_styling(latex_options = c("striped",
                                   "condensed"),
-                full_width = FALSE,
-                font_size=9)
+                full_width = FALSE)
 
 ```
+
 
 ### Method NO LINEAR MODEL 
 
 
 We use firts a descomposition methot with library `mixR` and then we use `nlmer` (@Bates2015) to calcularte parametrs
 
-```{r eval=FALSE}
-
-
+```{r eval=FALSE, echo=TRUE}
 # Agregar la nueva columna con los intervalos de longitud total
 sf6 <- sf5 |> 
   drop_na(length_total_cm) |> 
@@ -760,36 +730,78 @@ mod1_ev = mixfit(sf6$length_total_cm, ncomp = 2, ev = TRUE)
 
 ```
 
-## Natural Mortality
+## Natural Mortality in Krill
 
-In this exercises different bioanalogic methods are tested
+In this exercises different bioanalogic methods are tested with General Algoritm
 ```{r}
-lfq_results$EI <- c(lfq_list, sa_res1$par, list(agemax = sa_res1$agemax))
+MSSWI <- c(res_GAsswi$par, list(agemax = res_RSAsswi$agemax))
+# use the function M_empirical to estimate natural mortality
+Msswi <- M_empirical(Linf = MSSWI$Linf, K_l = MSSWI$K, 
+                  tmax = MSSWI$agemax, temp = 5,
+                  tm50 = 2,
+                  method = c("Pauly_Linf", "Hoenig", 
+                            "Hoenig",
+                             "AlversonCarney",
+                             "RikhterEfanov"
+                             ))
+# Bransfield
+BS <- c(res_GAbs$par, list(agemax = res_RSAbs$agemax))
 
 # use the function M_empirical to estimate natural mortality
-Ms <- M_empirical(Linf = lfq_list2$Linf, K_l = lfq_list2$K, 
-                  tmax = lfq_list2$agemax, temp = 20.2, 
+Mbs <- M_empirical(Linf = BS$Linf, K_l = BS$K, 
+                  tmax = BS$agemax, temp = 5,
+                  tm50 = 2,
                   method = c("Pauly_Linf", "Hoenig", 
-                             "Then_tmax", "Then_growth"))
+                              "Hoenig",
+                             "AlversonCarney",
+                             "RikhterEfanov"
+                             ))
+# GERLASHE
+GS <- c(res_GAgs$par, list(agemax = res_RSAgs$agemax))
 
-# True M: 0.2
-# take mean and standard deviation of the M estimates
-print(paste(round(mean(as.numeric(Ms)),3), "±", round(sd(as.numeric(Ms)),3)))
-# add the mean value to our data list
-lfq_list2$M <- mean(as.numeric(Ms))
-# alternativly use only Then_growth method:
-lfq_list2$M <- Ms[5]
-# M = 0.365
+# use the function M_empirical to estimate natural mortality
+Mgs <- M_empirical(Linf = GS$Linf, K_l = GS$K, 
+                  tmax = GS$agemax, temp = 5,
+                   tm50 = 2,
+                  method = c("Pauly_Linf", "Hoenig", 
+                             "Hoenig",
+                             "AlversonCarney",
+                             "RikhterEfanov"
+                             ))
+# Elephand Island
+MEI <- c(res_GAei$par, list(agemax = res_RSAei$agemax))
 
+# use the function M_empirical to estimate natural mortality
+Mei <- M_empirical(Linf = MEI$Linf, K_l = MEI$K, 
+                  tmax = MEI$agemax, temp = 5,
+                  tm50 = 2,
+                  method = c("Pauly_Linf", "Hoenig", 
+                             "Hoenig",
+                             "AlversonCarney",
+                             "RikhterEfanov"
+                             ))
 ```
 
 ```{r}
-M_empirical(Linf = 5.8, 
-            K_l = 0.63, 
-            temp = 5, tmax = 6,
-     method = c("Pauly_Linf","Hoenig",
-                "AlversonCarney",
-                "Then_tmax" ))
+# junto las bases
+
+Total_M <- cbind(Mei, Mbs, Mgs, Msswi)
+colnames(Total_M) <- c("EI", "BS" , "GS", "SSWI")
+mean <- colMeans(Total_M, na.rm = TRUE)
+# Agregar los promedios como una nueva fila al final del array
+Total_M_Mean <- rbind(Total_M, Mean = mean)
+```
+
+
+```{r}
+Total_M_Mean  %>%
+  kbl(booktabs = T,
+      position="ht!",
+    caption = "Estimated M by Strata") %>%
+  kable_styling(latex_options = c("striped",
+                                  "condensed"),
+                full_width = FALSE)
+
 ```
 
 
