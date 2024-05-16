@@ -1,5 +1,5 @@
 ---
-title: "Derive growth parameters of the von Bertalanffy growth function (VBGF) from LFQ data"
+title: "Derive growth parameters and Natural Mortality in krill considering spatial heterogenity"
 subtitle: "Working Paper to be submitted in a CCAMLR EMM-WG 2024"
 author:
   - Mardones Mauricio^[Universidad de Magallanes, mamardon@umag.cl]
