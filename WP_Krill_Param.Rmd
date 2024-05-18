@@ -1,29 +1,29 @@
 ---
-title: "Derive growth parameters and Natural Mortality in krill considering spatial heterogenity"
+title: "Derive growth parameters and natural mortality rates for krill while accounting for spatial heterogeneity in the Western Antarctic Peninsula."
 subtitle: "Working Paper to be submitted in a CCAMLR EMM-WG 2024"
 author:
   - Mardones Mauricio^[Universidad de Magallanes, mamardon@umag.cl]
-  - César Cárdenas^[Instituto Antártico Chileno]
-  - Francisco Santa Cruz ^[Instituto Antártico Chileno]
-  - Lucas Krüger ^[Instituto Antártico Chileno]
+  - César Cárdenas^[Instituto Antártico Chileno, Milenio Base]
+  - Francisco Santa Cruz ^[Instituto Antártico Chileno, Universidad de Magallanes]
+  - Lucas Krüger ^[Instituto Antártico Chileno, Milenio Base]
 date:  "`r format(Sys.time(), '%d %B, %Y')`"
 output:
   bookdown::pdf_document2:
-    fig_caption: yes
     number_sections: false
+fig_caption: yes
 bibliography: param.bib
-#csl: apa.csl
 csl: apa.csl
 link-citations: yes
+toc: false
 linkcolor: blue
-always_allow_html: true
-toc: true
-toc_deep: 3
+linestretch: 1.3
 header-includes:
-- \fontsize{12}{22}
+- \fontsize{14}{22}
 - \selectfont
+- \usepackage{lscape}
 ---
-
+\newpage
+\tableofcontents
 \newpage
 
 
@@ -60,66 +60,221 @@ library(hrbrthemes)
 library(ggthemes)
 ```
 
-```{r}
-My_theme <- theme(axis.text.y = element_blank(),
-                  axis.ticks.y = element_blank(),
-                  axis.ticks.x=element_blank(),
-                  panel.background = element_blank(),
-                  panel.border = element_rect(fill = NA, size = 1),
-                  strip.background = element_rect(fill = "white", 
-                                                  color = "white", 
-                                                  size = 1),
-                  text = element_text(size = 14),
-                  panel.grid.major = element_line(colour = "white", 
-                                                  size = 0.1),
-                  panel.grid.minor = element_line(colour = "white", 
-                                                  size = 0.1))
-```
-
 # ABSTRACT
 
-One approach for understanding the dynamics of krill populations in the Antarctic Peninsula is through the analysis of empirical data, such as size composition obtained from fishery monitoring. By studying this data over multiple years and considering life history parameters, we can assess the intrinsic productivity of krill and potential changes over time and in different areas. To achieve this, we have employed the Length-Based Spawning Potential Ratio (LBSPR) method. This method allows us to estimate the reproductive potential of the population based on current exploitation levels, as well as its comparison to a virgin condition. By identifying reference points specifically related to reproductive potential, the LBSPR method provides insights about the state of the krill population. Recognizing spatial and temporal changes in the intrinsic productivity of krill, as indicated by their reproductive potential, is crucial for the understanding of the unique characteristics of this species. Moreover, these findings have important implications for management strategies within the context of the Commission for the Conservation of Antarctic Marine Living Resources (CCAMLR). By integrating knowledge of krill dynamics and its reproductive potential, advise can be produced to ensure the sustainable management of krill populations in subarea 48.1.
 
-*Keywords: Krill populations, dynamic population, size compositions, Spawning Potential Ratio (SPR), Management, CCAMLR.*
+*Keywords: krill population, spatial heterogeneity, growth parameters, natural mortality,  Progresion Modal Analysis, bioanalogics models, *
 
 \newpage
 
 # INTRODUCTION
 
-The western Antarctic Peninsula ecosystem is a critical region of the Southern Ocean for populations of Antarctic krill (*Euphausia superba*; hereafter krill) serving as a major spawning and recruitment area and as an overwintering hotspot, especially within Bransfield Strait. Over the last 40 years, climate driven changes have resulted in warming waters, declines in seasonal sea ice extent and duration [@Stammerjohn2008a; @Stammerjohn2008], changing trends phytoplankton productivity [@Saba2014; @Siegel2013].
+The western Antarctic Peninsula ecosystem is a critical region of the Southern Ocean for populations of Antarctic krill (*Euphausia superba*; hereafter krill) serving as a major 
 
-Additionally, changes have impacted the population dynamics of krill, resulting in distribution changes with consequent contraction of the population in the southwest Atlantic Ocean toward the peninsula [@Atkinson2009]. In addition, changes in the population structure have also verified in krill in recent years [@Reiss2020]. The mentioned temporal and spatial changes have implications for the reproductive potential of the species and this, therefore, for intrinsic productivity.
-
-One way to understand and measure changes in intrinsic productivity is through assessing the ratio of krill reproductive potential. There are many length-based assessment methods to understand this changes between years [@Rudd2017a; @Froese2018; @Hordyk2016; @Canales2021]. On the other hand, one of the advantages of these methods is to use one of the most reliable and abundant sources in the sampling of fishing activities, such as size structures [@Canales2021].
-
-Spatial and temporal changes in the population structure have been a relevant issue within CCAMLR (Commission for the Conservation of Antarctic Marine Living Resources) fisheries management schemes. In this sense, new more localized or reduced spatial scales have been proposed to identify changes in these scales. Despite these proposals to identify krill population dynamics at a finer level, these schemes are not yet operational for decision making [@Hill2016; @McBride2021].
-
-We then propose to identify differences in krill reproductive potential at the finer spatial and temporal scales, propose a specific reference point considering the spatial scale, and ultimately provide recommendations for sustainable management of the krill fishery through intrinsic productivity in Subarea 48.1 on the Antarctic Peninsula in the Southern Ocean. @Perry2020
+Krill is a particularly important organism in the Antarctic ecosystem. In recent years, it has been subject to increasing exploitation by the countries that make up the Antarctic Treaty. This growing exploitation, coupled with environmental changes, has drawn attention to the management of the resource as a central axis for the sustainability of its populations, as well as for the fishing activity. To this end, various approaches have emerged aiming to provide or make recommendations for management based on models, whether these are design-based or model-based. An essential component of the models used are the growth parameters, as well as components of natural mortality. Despite their importance, several approaches have been taken to determine them in krill. In this regard, there have been analyses of various aspects. However, in recent years there have been no updates to these estimates. Furthermore, these estimates have been global and do not consider the particularity and spatial heterogeneity of krill in the main exploitation areas along the Antarctic Peninsula. In this work, we intend to reassess the growth and natural mortality parameters through modal progression analysis methods and biological methodologies. To do this, we will use the size structures of the fishery, which contain information and time series that allow for consistent estimators for each of the strata where krill exploitation occurs. With this, we aim, on the one hand, to update the parameter estimates using methods commonly known in fisheries science and, on the other hand, to propose a debate regarding the vitality of these parameters in the use of models that allow estimating population variables such as spawning biomass, fishing mortality, etc. With these models, decisions are being made at the context level.
 
 \newpage
 
-# 2. METHODOLOGY
+# METHODOLOGY
 
-## 2.1. Study area
+## Study area
 
-The study area includes subarea 48.1, which is one of the sectors where today the largest amount of krill fishing is concentrated [@McBride2021; @Atkinson2022; @SantaCruz2022]. In order to have a finest spatial definition of krill dynamics population, we will analyze the differences between the management strata defined in WG-EMM-2021/05 Rev. (@Dornam2021), namely Brainsfield Strait, Elephant Island, Extra, Joinville Island and South West (hereafter BS, EI, Extra, JOIN and SSIW respectively) (Figure \ref{Figure 1})
+The study area includes subarea 48.1, which is one of the sectors where today the largest amount of krill fishing is concentrated [@McBride2021; @Atkinson2022]. In order to have a finest spatial definition of krill dynamics population, we will analyze the differences between the management strata defined in WG-EMM-2021/05 Rev. (@Dornam2021), namely Brainsfield Strait, Elephant Island, Gerlashe Strait, Joinville Island and South West (hereafter BS, EI, GS, JOIN and SSIW respectively) (Figure \@ref(fig:mapa))
 
-```{r Figure 1, eval=FALSE, out.width='60%', fig.cap="\\label{Figure 1} Subarea 48.1 and management strata considered in the spatio-temporal analysis of intrinsic productivity of Krill (BS=Brainsfield Strait, EI= Elephant Island, Extra= Extra, JOIN= Joinville Island, SSWI= South West)"}
-knitr::include_graphics('Strata2.png')
-```
 
-## 2.2. Monitoring Data (SISO Program)
+## Monitoring Data (SISO Program)
 
-For this analysis, data from the monitoring of the krill fishery were used, which have been systematically collected on board fishing vessels by the CCAMLR SISO (Scheme of International Scientific Observation) program. Krill sizes compositions were obtained from the entire area 48.1, which was combined in each management stratum defined at 2.1 section (Figure \ref{Figure 2}).
+For this analysis, data from the monitoring of the krill fishery were used, which have been systematically collected on board fishing vessels by the CCAMLR SISO (Scheme of International Scientific Observation) program. Krill sizes compositions were obtained from the entire area 48.1, which was combined in each management stratum defined at 2.1 section (Figure \@ref(fig:hist)).
 
-```{r Figure 2, eval=FALSE, out.width='100%', fig.cap="\\label{Figure 2}Sizes compositions from SISO program monitoring krill fishery by strata (BS=Brainsfield Strait, EI= Elephant Island, Extra= Extra, JOIN= Joinville Island, SSWI= South West). Red line represent recruit size"}
-knitr::include_graphics('tallastrata.png')
-```
+
 
 The information gaps (years without sizes composition data) are not calculated because there is no autocorrelation between years, but singular estimators over time.
 
-## 2.3. Biological and fishery parameters krill
+## Modal Progresion Analisis 
+
+Modal progression analysis is a technique used to estimate growth parameters in marine populations by tracking the changes in the size-frequency distribution of a population over time. This method identifies distinct modes (peaks) in the size distribution, which represent cohorts of individuals that were born at the same time. By following these cohorts through subsequent sampling periods, it is possible to infer growth rates and other key biological parameters.
+
+#### Steps in Modal Progression Analysis:
+
+1. Data Collection: Gather length-frequency data from the population at different times. This involves measuring the sizes of individuals in the population and recording the frequency of each size class.
+
+2. Identification of Modes: Identify and track the distinct peaks (modes) in the size-frequency distributions. These peaks represent groups of individuals of similar age. this coponent was done with `mixR` package [@Yu2021] 
+
+3. Tracking Cohorts: Follow the identified modes over time to see how they shift. The movement of these modes over successive sampling periods reflects the growth of the individuals in those cohorts.
+
+4. Growth Model Fitting: Fit the observed shifts in modes to a growth model, such as the von Bertalanffy growth function (VBGF). This involves estimating parameters such as the growth coefficient (K), the asymptotic length (L_inf_), and the initial size at age zero (L0).
+
+5. Estimation of Growth Parameters: Use the fitted model to derive growth parameters that describe how individuals in the population grow over time.
+
+#### ELEFAN (Electronic Length Frequency Analysis)
+
+ELEFAN (Electronic Length Frequency Analysis) is a widely used software tool that applies modal progression analysis to estimate growth parameters based on seminal book from @Pauly1987. It automates the process of identifying and tracking modes in length-frequency data, making the analysis more efficient and accurate. we describe an algorithm that represent how EFELAN works.
+
+1. Input Data: Length-frequency data are input into the ELEFAN software. This data typically consists of size measurements collected from the population at different times.
+
+2. Peak Detection: ELEFAN uses algorithms to detect peaks in the length-frequency distributions. These peaks represent the modes or cohorts in the population.
+
+3. Growth Model Application: The software applies the von Bertalanffy growth function (VBGF) to the identified modes. It adjusts the growth parameters (K, L_inf_, and L0) to best fit the observed progression of modes.
+
+4. Optimization: ELEFAN employs optimization techniques to find the best set of growth parameters that minimize the difference between the observed and expected sizes of individuals in each cohort over time.
+
+5. Output: The software generates estimates of the growth parameters and provides visual representations of the fit between the model and the data. These outputs help researchers understand the growth dynamics of the population.
+
+#### von Bertalanffy Growth Function (VBGF)
+
+The von Bertalanffy growth function, which is often used in modal progression analysis and implemented in ELEFAN, is expressed as:
+
+\[ L(t) = L_\infty \left(1 - e^{-K(t-t_0)}\right) \]
+
+where:
+- \( L(t) \) is the length of the individual at age \( t \),
+- \( L_\infty \) is the asymptotic length (theoretical maximum length),
+- \( K \) is the growth coefficient,
+- \( t \) is the age,
+- \( t_0 \) is the hypothetical age at which the length is zero.
+
+The growth increment, which is the change in length over a time period, can be expressed as:
+
+\[ \Delta L = L(t + \Delta t) - L(t) \]
+
+where:
+- \( \Delta L \) is the change in length,
+- \( \Delta t \) is the time interval.
+
+Using the VBGF, this becomes:
+
+\[ \Delta L = L_\infty \left(1 - e^{-K((t + \Delta t) - t_0)}\right) - L_\infty \left(1 - e^{-K(t - t_0)}\right) \]
+
+#### Length at Age \( t \) for a Given Growth Interval
+
+For a specific time interval, the length at age \( t \) can be estimated as:
+
+\[ L(t + \Delta t) = L_\infty \left(1 - e^{-K(t + \Delta t - t_0)}\right) \]
+
+#### Estimation of Growth Parameters
+
+To fit the VBGF to the observed data, optimization techniques are used to minimize the difference between the observed lengths and those predicted by the model. This is typically done using the least squares method, where the objective is to minimize:
+
+\[ \sum_{i=1}^{n} \left( L_{\text{obs},i} - L_{\text{pred},i} \right)^2 \]
+
+where:
+- \( L_{\text{obs},i} \) is the observed length of the \( i \)-th individual,
+- \( L_{\text{pred},i} \) is the length predicted by the VBGF for the \( i \)-th individual.
+
+
+## Bioanalogical Methods for Estimating Natural Mortality
+
+
+Stock assessment models typically need an external estimate of the natural mortality rate (M), which is generally assumed to be constant across all ages and years within the model. While this assumption of a fixed M can significantly oversimplify reality, model diagnostics, such as profile likelihoods that could elucidate the impact of M on model fit, are often not utilized in practice [@Perreault2021].
+
+Estimating natural mortality (M) is a crucial aspect of fisheries science. Several bioanalogical methods have been developed, each based on empirical data and various life history parameters. Here are some of the widely used methods:
+
+#### Pauly's Method (Pauly_Linf)
+
+Pauly's method estimates natural mortality based on the von Bertalanffy growth parameters, ambient temperature, and the asymptotic length (L_inf_). The formula is given by:
+
+\[ M = 0.8 \left(\frac{K}{L_\infty}\right)^{0.25} + 0.015T \]
+
+where \( K \) is the growth coefficient, \( L_\infty \) is the asymptotic length, and \( T \) is the mean annual temperature in degrees Celsius.
+
+#### Hoenig's Method
+
+Hoenig proposed two methods for estimating natural mortality, one for fish and another for invertebrates.
+
+- 1. **For Fish:**
+   Hoenig's method for fish uses the maximum age (\( t_{\text{max}} \)):
+
+\[ \log(M) = 1.46 - 1.01 \log(t_{\text{max}}) \]
+
+- 2. **For Invertebrates:**
+   Hoenig's method for invertebrates is similarly based on the maximum age:
+
+   \[ \log(M) = 1.44 - 0.982 \log(t_{\text{max}}) \]
+
+#### Alverson and Carney's Method
+
+Alverson and Carney developed an empirical model relating natural mortality to the von Bertalanffy growth parameters. The formula is:
+
+\[ M = 3 \cdot \left(\frac{K}{L_\infty}\right)^{0.288} \]
+
+where \( K \) and \( L_\infty \) are the same von Bertalanffy growth parameters as previously described.
+
+#### Rikhter and Efanov's Method
+
+Rikhter and Efanov provided a method based on the age at maturity (\( t_m \)). The formula is:
+
+\[ M = \frac{1.521}{t_m^{0.72}} - 0.155 \]
+
+where \( t_m \) is the age at which 50% of the population reaches maturity.
+
+
+These methods provide different approaches to estimating natural mortality, each considering various biological and environmental factors, contributing to a more comprehensive understanding of fish population dynamics.
+
+All this metogds were appplied using a `TropFishR` package [@Mildenberger2019]. `TropFishR` is a useful tool to estimate a several component in a marine population, from parameters to status.
 
 \newpage
 
+# DISCUSION
+
+
+
+These formulas are central to the analysis of growth in marine populations using modal progression analysis and tools like ELEFAN. They help in estimating the growth parameters \( L_\infty \), \( K \), and \( t_0 \), which are critical for understanding the population dynamics and managing fisheries resources effectively.
+
+
+Modal progression analysis, especially when facilitated by tools like ELEFAN, is a powerful method for estimating growth parameters in marine populations. By tracking the shifts in size-frequency distributions over time, researchers can derive valuable insights into the growth rates and life history traits of marine species, which are crucial for effective fisheries management and conservation efforts.
+
+\newpage
+# FIGURES AND TABLES
+
+```{r mapa, fig.cap="Subarea 48.1 and management strata considered in the spatio-temporal analysis of intrinsic productivity of Krill (BS=Brainsfield Strait, EI= Elephant Island, Extra= Extra, JOIN= Joinville Island, SSWI= South West)"}
+knitr::include_graphics('index_files/figure-html/maptest-1.jpeg')
+```
+
+```{r hist, out.width='100%', fig.cap="Sizes compositions from SISO program monitoring krill fishery by strata (BS=Brainsfield Strait, EI= Elephant Island, GERLASHE= Gerlashe strait, JOIN= Joinville Island, SSWI= South West). Red line represent recruit size"}
+knitr::include_graphics('index_files/figure-html/unnamed-chunk-8-1.jpeg')
+```
+
+
+\begin{landscape}
+
+```{r raw, out.width='40%', fig.show='hold', fig.cap="ELEFANT 1"}
+par(mfrow=c(2,2))
+knitr::include_graphics(c('index_files/figure-html/unnamed-chunk-11-1.jpeg',
+                        'index_files/figure-html/unnamed-chunk-11-2.jpeg',
+                        'index_files/figure-html/unnamed-chunk-11-3.jpeg',
+                        'index_files/figure-html/unnamed-chunk-11-4.jpeg'))
+```
+
+\end{landscape}
+
+\newpage
+
+\begin{landscape}
+
+```{r cohort, out.width='40%', fig.show='hold', fig.cap="ELEFANT 1"}
+par(mfrow=c(2,2))
+knitr::include_graphics(c('index_files/figure-html/unnamed-chunk-13-1.jpeg',
+                        'index_files/figure-html/unnamed-chunk-13-2.jpeg',
+                        'index_files/figure-html/unnamed-chunk-13-3.jpeg',
+                        'index_files/figure-html/unnamed-chunk-13-4.jpeg'))
+```
+
+\end{landscape}
+
+\newpage
+
+# SUPLEMENTARY MATERIAL
+
+
+- Supporting Information 1. 
+
+Main equations and guide to calculate life story parameters in krill could be found in corresponding author Github Repo [Parameters_Krill](https://mauromardones.github.io/Krill_LH_Parameters/).
+
+
+- Supporting Information 2. 
+
+Templates data and raw codes in [Repo Parametrs Krill](https://github.com/MauroMardones/Krill_LH_Parameters)
+
+\newpage
 # REFERENCES
+

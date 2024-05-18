@@ -1,5 +1,5 @@
 ---
-title: "Derive growth parameters and Natural Mortality in krill considering spatial heterogenity"
+title: "Derive growth parameters and natural mortality rates for krill while accounting for spatial heterogeneity in the Western Antarctic Peninsula."
 subtitle: "Working Paper to be submitted in a CCAMLR EMM-WG 2024"
 author: "Mardones, M; Cárdenas, C."
 date:  "`r format(Sys.time(), '%d %B, %Y')`"
@@ -77,9 +77,6 @@ metadata <- load("~/DOCAS/Data/565_C1_KRI_2021-10-01/DATA_PRODUCT_565.RData")
 #ohbio
 #metadata
 #son lo mismo
-```
-
-```{r}
 #cargo objeto
 meta <- get("METADATA")
 c1 <- get("C1")
@@ -94,9 +91,6 @@ ohbio2 <- left_join(c1, ohbio, by="obs_haul_id")
 names(ohbio2)
 ```
 
-Firsts glance. Test how many register have by year. In this case,
-`length_total_cm` by season ccamlr. Same exercise in date period
-`date_catchperiod_start` to separate dates.
 
 ```{r}
 ohbio3 <- ohbio2 %>%
@@ -104,17 +98,10 @@ ohbio3 <- ohbio2 %>%
          Month = month(date_catchperiod_start),
          Day = day(date_catchperiod_start)) %>% 
   #toupper() para convertir los valores a mayúsculas
-  mutate(sex_code = toupper(sex_code))
+  mutate(sex_code = toupper(sex_code)) %>% 
+  dplyr::select(7, 9, 11, 12, 14, 24, 25, 29, 42, 44, 46, 47, 43, 45) |>  
+  filter(asd_code=="481")
 ```
-
-Save data further analysis
-```{r}
-length481 <-ohbio3 %>% 
-  dplyr::select(7, 9, 11, 12, 14, 24, 25, 29, 42, 44, 46, 47, 43, 45) |>   filter(asd_code=="481")
-#save(length481, file = "length481.RData")
-```
-
-
 
 
 First thing is get different rater layer to join krill data length
@@ -137,8 +124,7 @@ Test Strata SSMU, just to know another way to join data, but this kind of spatia
 Grouping bio data into stratas
 
 ```{r ssmu1}
-names(length481)
-ohbio6 <- st_as_sf(length481 %>% 
+ohbio6 <- st_as_sf(ohbio3 %>% 
                      drop_na(latitude_set_end), 
                    coords = c("longitude_set_end", "latitude_set_end"),  
                   crs = "+proj=latlong +ellps=WGS84")
@@ -176,7 +162,6 @@ ssmap
 ```
 
 
-
 Length composition by Strata CCAMLR to visualization first. First step is group data into to poligons strata.
 
 ```{r eval=FALSE}
@@ -193,6 +178,12 @@ Load RData
 sf4 <- readRDS("sf4.rds")
 ```
 
+Statistical difference
+
+```{r}
+m <- aov(length_total_cm ~ID, data=sf4)
+plot(TukeyHSD(m))
+```
 
 
 ## Data
@@ -269,14 +260,14 @@ kbl(tabla_proporcion,
 
 ## Parameters estimation `k` and `L_inf_`
 
-### Method `ELEFAN` 
-
-(@Tobias2017)
 
 
 ```{r}
+#MACHO
+
 sf5fil <- sf5 |>
-  filter(ID %in% c("BS", "EI", "GERLASHE", "SSIW")) |>  
+  filter(ID %in% c("BS", "EI", "GERLASHE", "SSIW"),
+         sex_code %in% "M") |>  
   mutate(date_catchperiod_start = as.Date(date_catchperiod_start)) |>  
   mutate(yearly_Group = floor_date(date_catchperiod_start, "year")) |>   # New column
   drop_na(length_total_cm) 
@@ -303,8 +294,39 @@ for (id in unique(sf5fil$ID)) {
        main = nombre)
 }
 
+#HEMBRA
+
+sf5filhe <- sf5 |>
+  filter(ID %in% c("BS", "EI", "GERLASHE", "SSIW"),
+         sex_code %in% "F") |>  
+  mutate(date_catchperiod_start = as.Date(date_catchperiod_start)) |>  
+  mutate(yearly_Group = floor_date(date_catchperiod_start, "year")) |>   # New column
+  drop_na(length_total_cm) 
+
+# Definir los nombres correspondientes a cada objeto lfq_results
+nombres <- c("SSI", "BS", "GERLASHE", "EI")
+# Crear una lista para almacenar los resultados de cada ID
+lfq_resultshe <- list()
+# Iterar sobre cada ID
+for (id in unique(sf5filhe$ID)) {
+  # Obtener el nombre correspondiente
+  nombre <- nombres[which(unique(sf5filhe$ID) == id)]
+  # Filtrar los datos para el ID actual
+  df_idhe <- sf5filhe %>% filter(ID == id)
+  # Crear un objeto lfq para el ID actual
+  lfqhe <- lfqCreate(data = df_idhe,
+                   Lname = "length_total_cm",
+                   Dname = "yearly_Group",
+                   bin_size = 0.1)
+  # Agregar el resultado a la lista
+  lfq_resultshe[[id]] <- lfqhe
+  # Graficar el objeto lfq
+  plot(lfqhe, Fname = "catch",
+       main = nombre)
+}
 ```
-Identified distribution
+
+Identified difference in length distribution just to male:
 
 ```{r message=FALSE}
 
@@ -314,7 +336,37 @@ bs <- Bhattacharya(lfq_results$BS)
 gs <- Bhattacharya(lfq_results$GERLASHE)
 
 ```
-ahora damos asignaciones a curvas para representación
+
+now we assign objet to male `lfq_result` and female `lfq_resulthe` and plot with `lfqRestructure()`
+
+
+Male
+
+```{r}
+# Definir los nombres correspondientes a cada objeto lfq_results
+nombres <- c("SSI", "BS", "GERLASHE", "EI")
+# Iterar sobre cada objeto lfq almacenado en lfq_results
+for (i in seq_along(lfq_results)) {
+  lfq <- lfq_results[[i]]
+  # Obtener el nombre correspondiente
+  nombre <- nombres[i]
+  # Restructurar el objeto lfq
+  lfqbin <- lfqRestructure(lfq, MA = 3, addl.sqrt = TRUE)
+  # Graficar el objeto lfq reestructurado
+  plot(lfqbin, hist.col = c("white", "black"),
+       image.col = c(rep(rgb(1,0.8,0.8),1000), "white", 
+                     rep(rgb(0.8,0.8,1),1000)),
+       ylim = c(0,max(lfqbin$midLengths+0.5)),
+       main = nombre)
+  # Ajustar curvas al objeto lfq reestructurado
+  tmp <- lfqFitCurves(lfqbin, par = list(Linf=6.5, 
+                                          K=0.45,
+                                          t_anchor=0.5),
+                      draw = TRUE, col=4, lty=2)
+}
+```
+
+Female
 
 ```{r}
 # Crear una lista para almacenar los resultados de PW_results <- list()
@@ -323,83 +375,60 @@ ahora damos asignaciones a curvas para representación
 nombres <- c("SSI", "BS", "GERLASHE", "EI")
 
 # Iterar sobre cada objeto lfq almacenado en lfq_results
-for (i in seq_along(lfq_results)) {
-  lfq <- lfq_results[[i]]
+for (i in seq_along(lfq_resultshe)) {
+  lfqhe <- lfq_resultshe[[i]]
   
   # Obtener el nombre correspondiente
   nombre <- nombres[i]
   
   # Restructurar el objeto lfq
-  lfqbin <- lfqRestructure(lfq, MA = 3, addl.sqrt = TRUE)
+  lfqbinhe <- lfqRestructure(lfqhe, MA = 3, addl.sqrt = TRUE)
   
   # Graficar el objeto lfq reestructurado
-  plot(lfqbin, hist.col = c("white", "black"),
+  plot(lfqbinhe, hist.col = c("white", "black"),
        image.col = c(rep(rgb(1,0.8,0.8),1000), "white", 
                      rep(rgb(0.8,0.8,1),1000)),
-       ylim = c(0,max(lfqbin$midLengths+0.5)),
+       ylim = c(0,max(lfqbinhe$midLengths+0.5)),
        main = nombre)
   
   # Ajustar curvas al objeto lfq reestructurado
-  tmp <- lfqFitCurves(lfqbin, par = list(Linf=6.5, 
+  tmp <- lfqFitCurves(lfqbinhe, par = list(Linf=6.5, 
                                           K=0.45,
                                           t_anchor=0.5),
                       draw = TRUE, col=4, lty=2)
 }
 
 ```
+### Modal Progression analysis with `ELEFAN` to estimated `Linf`and `K`
 
+Method based on @Pauly1987 and @Mildenberger2017
 
-
-Proceed to fit Modal Progression analysis with `ELEFAN`
-
-#### Parameters to `SSIW`
-
-```{r}
-# Response surface analyss
-res_RSAsswi <- ELEFAN(lfq = lfq_results$SSIW,  
-                  MA = 5,
-                  Linf_range = seq(4.5, 7, 
-                                   length.out = 30),
-                  K_range = exp(seq(log(0.1),
-                                    log(2),
-                                    length.out = 30)),
-                  C = 0.5,
-                  ts = 0.5,
-                  method = "cross",
-                  cross.date = lfq_results$SSIW$dates[3],
-                  cross.midLength = lfq_results$SSIW$midLengths[5],
-                  contour = TRUE,
-                  add.values = FALSE,
-                  agemax = 5,
-                  hide.progressbar = TRUE)
-```
-
+#### Krill Male
 
 ```{r}
+#### Parameters to `SSWI`
+
 # run ELEFAN with simulated annealing
 res_SAsswi <- ELEFAN_SA(lfq_results$SSIW, 
                     SA_time = 60*0.5, 
                     MA = 5, 
                     agemax = 5,
                     seasonalised = TRUE, addl.sqrt = TRUE,
-                    init_par = list(Linf = 4.5, 
+                    init_par = list(Linf = 6, 
                                     K = 0.5, 
                                     t_anchor = 0.5,
                                     C=0.5, 
                                     ts = 0.5),
-                    low_par = list(Linf = 4,
+                    low_par = list(Linf = 5,
                                    K = 0.01,
                                    t_anchor = 0, 
                                    C = 0, 
                                    ts = 0),
-                    up_par = list(Linf = 6.5,
+                    up_par = list(Linf = 7.5,
                                   K = 1, 
                                   t_anchor = 1,
                                   C = 1, ts = 1))
-```
 
-
-```{r}
 # run ELEFAN with genetic algorithm
 res_GAsswi <- ELEFAN_GA(lfq_results$SSIW, 
                     MA = 5, 
@@ -407,84 +436,40 @@ res_GAsswi <- ELEFAN_GA(lfq_results$SSIW,
                     maxiter = 10, 
                     agemax = 5,
                     addl.sqrt = TRUE,
-                    low_par = list(Linf = 4.5, 
-                                   K = 0.01, 
+                     low_par = list(Linf = 5,
+                                   K = 0.01,
                                    t_anchor = 0, 
                                    C = 0, 
                                    ts = 0),
-                    up_par = list(Linf = 6.5, 
+                    up_par = list(Linf = 7.5,
                                   K = 1, 
                                   t_anchor = 1,
                                   C = 1, ts = 1),
                     monitor = FALSE)
-```
 
-Table with different method
-
-```{r}
-# show results
-RSAsswi <- unlist(res_RSAsswi$par)
-GAsswi <- unlist(res_GAsswi$par)
-SAsswi <- unlist(res_SAsswi$par)
-parsswi <- round(rbind(RSAsswi, GAsswi, SAsswi),3)
-
-parsswi %>%
-  kbl(booktabs = T,
-      position="ht!",
-    caption = "Parametres LH to SSWI") %>%
-    kable_styling(latex_options = c("striped",
-                                  "condensed"),
-                full_width = FALSE)
-
-```
 #### Parameters to `EI`
 
-```{r}
-# Response surface analyss
-res_RSAei <- ELEFAN(lfq = lfq_results$EI,  
-                  MA = 5,
-                  Linf_range = seq(4.5, 7, 
-                                   length.out = 30),
-                  K_range = exp(seq(log(0.1),
-                                    log(2),
-                                    length.out = 30)),
-                  C = 0.5,
-                  ts = 0.5,
-                  method = "cross",
-                  cross.date = lfq_results$EI$dates[3],
-                  cross.midLength = lfq_results$EI$midLengths[5],
-                  contour = TRUE,
-                  add.values = FALSE,
-                  agemax = 5,
-                  hide.progressbar = TRUE)
-```
-
-
-```{r}
 # run ELEFAN with simulated annealing
 res_SAei <- ELEFAN_SA(lfq_results$EI, 
                     SA_time = 60*0.5, 
                     MA = 5, 
                     agemax = 5,
                     seasonalised = TRUE, addl.sqrt = TRUE,
-                    init_par = list(Linf = 4.5, 
+                    init_par = list(Linf = 6, 
                                     K = 0.5, 
                                     t_anchor = 0.5,
                                     C=0.5, 
                                     ts = 0.5),
-                    low_par = list(Linf = 4,
+                    low_par = list(Linf = 5,
                                    K = 0.01,
                                    t_anchor = 0, 
                                    C = 0, 
                                    ts = 0),
-                    up_par = list(Linf = 6.5,
+                    up_par = list(Linf = 7.5,
                                   K = 1, 
                                   t_anchor = 1,
                                   C = 1, ts = 1))
-```
 
-
-```{r}
 # run ELEFAN with genetic algorithm
 res_GAei <- ELEFAN_GA(lfq_results$EI, 
                     MA = 5, 
@@ -492,76 +477,41 @@ res_GAei <- ELEFAN_GA(lfq_results$EI,
                     maxiter = 10, 
                     agemax = 5,
                     addl.sqrt = TRUE,
-                    low_par = list(Linf = 4.5, 
-                                   K = 0.01, 
+                     low_par = list(Linf = 5,
+                                   K = 0.01,
                                    t_anchor = 0, 
                                    C = 0, 
                                    ts = 0),
-                    up_par = list(Linf = 6.5, 
+                    up_par = list(Linf = 7.5,
                                   K = 1, 
                                   t_anchor = 1,
                                   C = 1, ts = 1),
                     monitor = FALSE)
-```
-
-```{r}
-# show results
-RSAei <- unlist(res_RSAei$par)
-GAei <- unlist(res_GAei$par)
-SAei <- unlist(res_SAei$par)
-parei <- round(rbind(RSAei, GAei, SAei),3)
-```
-
 
 
 #### Parameters to `BS`
 
-```{r}
-# Response surface analyss
-res_RSAbs <- ELEFAN(lfq = lfq_results$BS,  
-                  MA = 5,
-                  Linf_range = seq(4.5, 7, 
-                                   length.out = 30),
-                  K_range = exp(seq(log(0.1),
-                                    log(2),
-                                    length.out = 30)),
-                  C = 0.5,
-                  ts = 0.5,
-                  method = "cross",
-                  cross.date = lfq_results$BS$dates[3],
-                  cross.midLength = lfq_results$BS$midLengths[5],
-                  contour = TRUE,
-                  add.values = FALSE,
-                  agemax = 5,
-                  hide.progressbar = TRUE)
-```
-
-
-```{r}
 # run ELEFAN with simulated annealing
 res_SAbs <- ELEFAN_SA(lfq_results$BS, 
                     SA_time = 60*0.5, 
                     MA = 5, 
                     agemax = 5,
                     seasonalised = TRUE, addl.sqrt = TRUE,
-                    init_par = list(Linf = 4.5, 
+                   init_par = list(Linf = 6, 
                                     K = 0.5, 
                                     t_anchor = 0.5,
                                     C=0.5, 
                                     ts = 0.5),
-                    low_par = list(Linf = 4,
+                    low_par = list(Linf = 5,
                                    K = 0.01,
                                    t_anchor = 0, 
                                    C = 0, 
                                    ts = 0),
-                    up_par = list(Linf = 6.5,
+                    up_par = list(Linf = 7.5,
                                   K = 1, 
                                   t_anchor = 1,
                                   C = 1, ts = 1))
-```
 
-
-```{r}
 # run ELEFAN with genetic algorithm
 res_GAbs <- ELEFAN_GA(lfq_results$BS, 
                     MA = 5, 
@@ -569,75 +519,41 @@ res_GAbs <- ELEFAN_GA(lfq_results$BS,
                     maxiter = 10, 
                     agemax = 5,
                     addl.sqrt = TRUE,
-                    low_par = list(Linf = 4.5, 
-                                   K = 0.01, 
+                    low_par = list(Linf = 5,
+                                   K = 0.01,
                                    t_anchor = 0, 
                                    C = 0, 
                                    ts = 0),
-                    up_par = list(Linf = 6.5, 
+                    up_par = list(Linf = 7.5,
                                   K = 1, 
                                   t_anchor = 1,
                                   C = 1, ts = 1),
                     monitor = FALSE)
-```
 
-```{r}
-# show results
-RSAbs <- unlist(res_RSAbs$par)
-GAbs <- unlist(res_GAbs$par)
-SAbs <- unlist(res_SAbs$par)
-parbs <- round(rbind(RSAbs, GAbs, SAbs),3)
-
-```
 
 #### Parameters to `GERLASHE`
 
-```{r}
-# Response surface analyss
-res_RSAgs <- ELEFAN(lfq = lfq_results$GERLASHE,  
-                  MA = 5,
-                  Linf_range = seq(4.5, 7, 
-                                   length.out = 30),
-                  K_range = exp(seq(log(0.1),
-                                    log(2),
-                                    length.out = 30)),
-                  C = 0.5,
-                  ts = 0.5,
-                  method = "cross",
-                  cross.date = lfq_results$GERLASHE$dates[3],
-                  cross.midLength = lfq_results$GERLASHE$midLengths[5],
-                  contour = TRUE,
-                  add.values = FALSE,
-                  agemax = 5,
-                  hide.progressbar = TRUE)
-```
-
-
-```{r}
 # run ELEFAN with simulated annealing
 res_SAgs <- ELEFAN_SA(lfq_results$GERLASHE, 
                     SA_time = 60*0.5, 
                     MA = 5, 
                     agemax = 5,
                     seasonalised = TRUE, addl.sqrt = TRUE,
-                    init_par = list(Linf = 4.5, 
+                    init_par = list(Linf = 6, 
                                     K = 0.5, 
                                     t_anchor = 0.5,
                                     C=0.5, 
                                     ts = 0.5),
-                    low_par = list(Linf = 4,
+                    low_par = list(Linf = 5,
                                    K = 0.01,
                                    t_anchor = 0, 
                                    C = 0, 
                                    ts = 0),
-                    up_par = list(Linf = 6.5,
+                    up_par = list(Linf = 7.5,
                                   K = 1, 
                                   t_anchor = 1,
                                   C = 1, ts = 1))
-```
 
-
-```{r}
 # run ELEFAN with genetic algorithm
 res_GAgs <- ELEFAN_GA(lfq_results$GERLASHE, 
                     MA = 5, 
@@ -645,31 +561,236 @@ res_GAgs <- ELEFAN_GA(lfq_results$GERLASHE,
                     maxiter = 10, 
                     agemax = 5,
                     addl.sqrt = TRUE,
-                    low_par = list(Linf = 4.5, 
-                                   K = 0.01, 
+                    low_par = list(Linf = 5,
+                                   K = 0.01,
                                    t_anchor = 0, 
                                    C = 0, 
                                    ts = 0),
-                    up_par = list(Linf = 6.5, 
+                    up_par = list(Linf = 7.5,
+                                  K = 1, 
+                                  t_anchor = 1,
+                                  C = 1, ts = 1),
+                    monitor = FALSE)
+```
+#### Krill Female
+
+
+```{r}
+#### Parameters to `SSWI`
+
+# run ELEFAN with simulated annealing
+res_SAsswihe <- ELEFAN_SA(lfq_resultshe$SSIW, 
+                    SA_time = 60*0.5, 
+                    MA = 5, 
+                    agemax = 5,
+                    seasonalised = TRUE, addl.sqrt = TRUE,
+                    init_par = list(Linf = 6, 
+                                    K = 0.5, 
+                                    t_anchor = 0.5,
+                                    C=0.5, 
+                                    ts = 0.5),
+                    low_par = list(Linf = 5,
+                                   K = 0.01,
+                                   t_anchor = 0, 
+                                   C = 0, 
+                                   ts = 0),
+                    up_par = list(Linf = 7.5,
+                                  K = 1, 
+                                  t_anchor = 1,
+                                  C = 1, ts = 1))
+
+# run ELEFAN with genetic algorithm
+res_GAsswihe <- ELEFAN_GA(lfq_resultshe$SSIW, 
+                    MA = 5, 
+                    seasonalised = TRUE, 
+                    maxiter = 10, 
+                    agemax = 5,
+                    addl.sqrt = TRUE,
+                     low_par = list(Linf = 5,
+                                   K = 0.01,
+                                   t_anchor = 0, 
+                                   C = 0, 
+                                   ts = 0),
+                    up_par = list(Linf = 7.5,
+                                  K = 1, 
+                                  t_anchor = 1,
+                                  C = 1, ts = 1),
+                    monitor = FALSE)
+
+
+#### Parameters to `EI`
+
+# run ELEFAN with simulated annealing
+res_SAeihe <- ELEFAN_SA(lfq_resultshe$EI, 
+                    SA_time = 60*0.5, 
+                    MA = 5, 
+                    agemax = 5,
+                    seasonalised = TRUE, addl.sqrt = TRUE,
+                    init_par = list(Linf = 6, 
+                                    K = 0.5, 
+                                    t_anchor = 0.5,
+                                    C=0.5, 
+                                    ts = 0.5),
+                    low_par = list(Linf = 5,
+                                   K = 0.01,
+                                   t_anchor = 0, 
+                                   C = 0, 
+                                   ts = 0),
+                    up_par = list(Linf = 7.5,
+                                  K = 1, 
+                                  t_anchor = 1,
+                                  C = 1, ts = 1))
+
+# run ELEFAN with genetic algorithm
+res_GAeihe <- ELEFAN_GA(lfq_resultshe$EI, 
+                    MA = 5, 
+                    seasonalised = TRUE, 
+                    maxiter = 10, 
+                    agemax = 5,
+                    addl.sqrt = TRUE,
+                     low_par = list(Linf = 5,
+                                   K = 0.01,
+                                   t_anchor = 0, 
+                                   C = 0, 
+                                   ts = 0),
+                    up_par = list(Linf = 7.5,
+                                  K = 1, 
+                                  t_anchor = 1,
+                                  C = 1, ts = 1),
+                    monitor = FALSE)
+
+
+#### Parameters to `BS`
+
+
+# run ELEFAN with simulated annealing
+res_SAbshe <- ELEFAN_SA(lfq_resultshe$BS, 
+                    SA_time = 60*0.5, 
+                    MA = 5, 
+                    agemax = 5,
+                    seasonalised = TRUE, addl.sqrt = TRUE,
+                   init_par = list(Linf = 6, 
+                                    K = 0.5, 
+                                    t_anchor = 0.5,
+                                    C=0.5, 
+                                    ts = 0.5),
+                    low_par = list(Linf = 5,
+                                   K = 0.01,
+                                   t_anchor = 0, 
+                                   C = 0, 
+                                   ts = 0),
+                    up_par = list(Linf = 7.5,
+                                  K = 1, 
+                                  t_anchor = 1,
+                                  C = 1, ts = 1))
+
+# run ELEFAN with genetic algorithm
+res_GAbshe <- ELEFAN_GA(lfq_resultshe$BS, 
+                    MA = 5, 
+                    seasonalised = TRUE, 
+                    maxiter = 10, 
+                    agemax = 5,
+                    addl.sqrt = TRUE,
+                    low_par = list(Linf = 5,
+                                   K = 0.01,
+                                   t_anchor = 0, 
+                                   C = 0, 
+                                   ts = 0),
+                    up_par = list(Linf = 7.5,
+                                  K = 1, 
+                                  t_anchor = 1,
+                                  C = 1, ts = 1),
+                    monitor = FALSE)
+
+
+#### Parameters to `GERLASHE`
+
+
+# run ELEFAN with simulated annealing
+res_SAgshe <- ELEFAN_SA(lfq_resultshe$GERLASHE, 
+                    SA_time = 60*0.5, 
+                    MA = 5, 
+                    agemax = 5,
+                    seasonalised = TRUE, addl.sqrt = TRUE,
+                    init_par = list(Linf = 6, 
+                                    K = 0.5, 
+                                    t_anchor = 0.5,
+                                    C=0.5, 
+                                    ts = 0.5),
+                    low_par = list(Linf = 5,
+                                   K = 0.01,
+                                   t_anchor = 0, 
+                                   C = 0, 
+                                   ts = 0),
+                    up_par = list(Linf = 7.5,
+                                  K = 1, 
+                                  t_anchor = 1,
+                                  C = 1, ts = 1))
+
+# run ELEFAN with genetic algorithm
+res_GAgshe <- ELEFAN_GA(lfq_resultshe$GERLASHE, 
+                    MA = 5, 
+                    seasonalised = TRUE, 
+                    maxiter = 10, 
+                    agemax = 5,
+                    addl.sqrt = TRUE,
+                    low_par = list(Linf = 5,
+                                   K = 0.01,
+                                   t_anchor = 0, 
+                                   C = 0, 
+                                   ts = 0),
+                    up_par = list(Linf = 7.5,
                                   K = 1, 
                                   t_anchor = 1,
                                   C = 1, ts = 1),
                     monitor = FALSE)
 ```
 
+Resuming parameters to both sex  by strata to krill
 ```{r}
-# show results
-RSAgs <- unlist(res_RSAgs$par)
+#male
+GAbs <- unlist(res_GAbs$par)
+SAbs <- unlist(res_SAbs$par)
+GAei <- unlist(res_GAei$par)
+SAei <- unlist(res_SAei$par)
+GAsswi <- unlist(res_GAsswi$par)
+SAsswi <- unlist(res_SAsswi$par)
 GAgs <- unlist(res_GAgs$par)
 SAgs <- unlist(res_SAgs$par)
-pargs <- round(rbind(RSAgs, GAgs, SAgs),3)
-
+#female
+GAbshe <- unlist(res_GAbshe$par)
+SAbshe <- unlist(res_SAbshe$par)
+GAeihe <- unlist(res_GAeihe$par)
+SAeihe <- unlist(res_SAeihe$par)
+GAsswihe <- unlist(res_GAsswihe$par)
+SAsswihe <- unlist(res_SAsswihe$par)
+GAgshe <- unlist(res_GAgshe$par)
+SAgshe <- unlist(res_SAgshe$par)
+# join 
+t_k_linf <- rbind(GAbs[1:2],
+                  SAbs[1:2],
+                  GAei[1:2],
+                  SAei[1:2],
+                  GAsswi[1:2],
+                  SAsswi[1:2],
+                  GAgs[1:2],
+                  SAgs[1:2],
+                  GAbshe[1:2],
+                  SAbshe[1:2],
+                  GAeihe[1:2],
+                  SAeihe[1:2],
+                  GAsswihe[1:2],
+                  SAsswihe[1:2],
+                  GAgshe[1:2],
+                  SAgshe[1:2])
+                  
+                  
+                
 ```
 total Table with `L_inf_` and `K`
 
 ```{r}
 
-t_k_linf <- rbind(parsswi, parei, parbs, pargs)
 t_k_linf %>%
   kbl(booktabs = T,
       position="ht!",
@@ -680,6 +801,29 @@ t_k_linf %>%
 
 ```
 
+Made VB curves by methot and strata
+
+```{r}
+# Definir parámetros de la curva de von Bertalanffy para diferentes grupos
+
+# Crear una secuencia de edades para predecir la longitud
+edades <- seq(0, 10, by = 0.1)
+
+# Generar datos para cada grupo
+datos <- do.call(rbind, lapply(1:nrow(parametros), function(i) {
+  longitudes_pred <- parametros$L_inf[i] * (1 - exp(-parametros$K[i] * (edades - parametros$t0[i])))
+  data.frame(grupo = parametros$grupo[i], edad = edades, longitud = longitudes_pred)
+}))
+
+# Tramar las curvas de von Bertalanffy utilizando ggplot2
+ggplot(datos, aes(x = edad, y = longitud, color = grupo)) +
+  geom_line()+
+  labs(title = "Curvas de von Bertalanffy para diferentes grupos",
+       x = "Edad",
+       y = "Longitud") +
+  theme_few()
+
+```
 
 ### Method NO LINEAR MODEL 
 
