@@ -1219,9 +1219,73 @@ ggarrange(m_female, m_male,
           ncol=1,
           legend="right")
 ```
-Statistical diferences
+Statistical diferences in female
+
+```{r}
+# Realizar la prueba ANOVA
+anova_result <- aov(Value ~ Stratum, data = df_long_male %>% drop_na())
+summary(anova_result)
+# Realizar la prueba post hoc de Tukey
+tukey_result <- TukeyHSD(anova_result)
+# Convertir los resultados de Tukey a un data frame
+tukey_df <- as.data.frame(tukey_result$Stratum)
+tukey_df$pair <- rownames(tukey_df)
+tukey_df <- tukey_df %>%
+  mutate(Stratum1 = sapply(strsplit(pair, "-"), `[`, 1),
+         Stratum2 = sapply(strsplit(pair, "-"), `[`, 2))
+
+# Seleccionar las columnas relevantes
+tukey_table <- tukey_df %>%
+  dplyr::select(Stratum1, Stratum2, diff, `p adj`, `lwr`, `upr`) %>%
+  rename(Difference = diff, 
+         P_value = `p adj`, 
+         Lower_CI = `lwr`, 
+         Upper_CI = `upr`)
 
 
+kbl(tukey_table, 
+    caption = "Test to differences between strata")  |> 
+  kable_classic(full_width = F, 
+                html_font = "Cambria") |> 
+  kable_styling(bootstrap_options = "striped", 
+                latex_options = "striped")
+
+
+
+```
+Statistical diferences in female
+
+```{r}
+# Realizar la prueba ANOVA
+anova_result_ma <- aov(Value ~ Stratum, data = df_long %>% drop_na())
+summary(anova_result_ma)
+# Realizar la prueba post hoc de Tukey
+tukey_result_ma <- TukeyHSD(anova_result_ma)
+# Convertir los resultados de Tukey a un data frame
+tukey_df_ma <- as.data.frame(tukey_result_ma$Stratum)
+tukey_df_ma$pair <- rownames(tukey_df_ma)
+tukey_df_ma <- tukey_df_ma %>%
+  mutate(Stratum1 = sapply(strsplit(pair, "-"), `[`, 1),
+         Stratum2 = sapply(strsplit(pair, "-"), `[`, 2))
+
+# Seleccionar las columnas relevantes
+tukey_table_ma <- tukey_df_ma %>%
+  dplyr::select(Stratum1, Stratum2, diff, `p adj`, `lwr`, `upr`) %>%
+  rename(Difference = diff, 
+         P_value = `p adj`, 
+         Lower_CI = `lwr`, 
+         Upper_CI = `upr`)
+
+
+kbl(tukey_table, 
+    caption = "Test to differences between strata")  |> 
+  kable_classic(full_width = F, 
+                html_font = "Cambria") |> 
+  kable_styling(bootstrap_options = "striped", 
+                latex_options = "striped")
+
+
+```
 
 
 # References

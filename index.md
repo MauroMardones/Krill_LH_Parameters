@@ -565,12 +565,12 @@ res_SAsswi <- ELEFAN_SA(lfq_results$SSIW,
 ```
 ## Simulated annealing is running. 
 ## This will take approximately 0.5 minutes.
-## timeSpan = 30.012484 maxTime = 30
+## timeSpan = 30.00551 maxTime = 30
 ## Emini is: -0.2570441366
 ## xmini are:
 ## 6.418895303 0.7678352515 0.5033732662 0.490536049 0.8187059425 
-## Totally it used 30.012503 secs
-## No. of function call is: 1116
+## Totally it used 30.005531 secs
+## No. of function call is: 1146
 ```
 
 ```r
@@ -627,12 +627,12 @@ res_SAei <- ELEFAN_SA(lfq_results$EI,
 ```
 ## Simulated annealing is running. 
 ## This will take approximately 0.5 minutes.
-## timeSpan = 30.008584 maxTime = 30
+## timeSpan = 30.010647 maxTime = 30
 ## Emini is: -0.2367092272
 ## xmini are:
 ## 7.314306291 0.9412915653 0.6182883382 0.7314349413 0.4690019973 
-## Totally it used 30.008602 secs
-## No. of function call is: 1333
+## Totally it used 30.010668 secs
+## No. of function call is: 1358
 ```
 
 ```r
@@ -689,12 +689,12 @@ res_SAbs <- ELEFAN_SA(lfq_results$BS,
 ```
 ## Simulated annealing is running. 
 ## This will take approximately 0.5 minutes.
-## timeSpan = 30.001463 maxTime = 30
+## timeSpan = 30.088881 maxTime = 30
 ## Emini is: -0.3182638225
 ## xmini are:
 ## 5.593892905 0.604283656 0.1065582037 0.643085584 0.9565868378 
-## Totally it used 30.001483 secs
-## No. of function call is: 1233
+## Totally it used 30.0889 secs
+## No. of function call is: 1236
 ```
 
 ```r
@@ -751,12 +751,12 @@ res_SAgs <- ELEFAN_SA(lfq_results$GERLASHE,
 ```
 ## Simulated annealing is running. 
 ## This will take approximately 0.5 minutes.
-## timeSpan = 30.004772 maxTime = 30
+## timeSpan = 30.0003 maxTime = 30
 ## Emini is: -0.2869010907
 ## xmini are:
 ## 5.789427124 0.7127949446 0.4013525844 0.5469309241 0.1102455743 
-## Totally it used 30.00479 secs
-## No. of function call is: 1696
+## Totally it used 30.000324 secs
+## No. of function call is: 1686
 ```
 
 ```r
@@ -816,12 +816,12 @@ res_SAsswihe <- ELEFAN_SA(lfq_resultshe$SSIW,
 ```
 ## Simulated annealing is running. 
 ## This will take approximately 0.5 minutes.
-## timeSpan = 30.008171 maxTime = 30
+## timeSpan = 30.001515 maxTime = 30
 ## Emini is: -0.2316358367
 ## xmini are:
 ## 6.003211424 0.6594774183 0.1511300988 0.1896827698 0.9636289105 
-## Totally it used 30.00819 secs
-## No. of function call is: 1176
+## Totally it used 30.001535 secs
+## No. of function call is: 1074
 ```
 
 ```r
@@ -878,12 +878,12 @@ res_SAeihe <- ELEFAN_SA(lfq_resultshe$EI,
 ```
 ## Simulated annealing is running. 
 ## This will take approximately 0.5 minutes.
-## timeSpan = 30.020357 maxTime = 30
+## timeSpan = 30.000076 maxTime = 30
 ## Emini is: -0.2964366709
 ## xmini are:
 ## 5.585338324 0.9580215203 0.2021615843 0.7399474084 0.666007027 
-## Totally it used 30.020379 secs
-## No. of function call is: 1319
+## Totally it used 30.000094 secs
+## No. of function call is: 1361
 ```
 
 ```r
@@ -941,12 +941,12 @@ res_SAbshe <- ELEFAN_SA(lfq_resultshe$BS,
 ```
 ## Simulated annealing is running. 
 ## This will take approximately 0.5 minutes.
-## timeSpan = 30.016515 maxTime = 30
+## timeSpan = 30.011489 maxTime = 30
 ## Emini is: -0.4349139705
 ## xmini are:
 ## 5.923948187 0.8310357623 0.5259462683 0.3320332617 0.281676233 
-## Totally it used 30.016542 secs
-## No. of function call is: 1183
+## Totally it used 30.011507 secs
+## No. of function call is: 1226
 ```
 
 ```r
@@ -1004,12 +1004,12 @@ res_SAgshe <- ELEFAN_SA(lfq_resultshe$GERLASHE,
 ```
 ## Simulated annealing is running. 
 ## This will take approximately 0.5 minutes.
-## timeSpan = 30.0125 maxTime = 30
+## timeSpan = 30.006023 maxTime = 30
 ## Emini is: -0.3825402709
 ## xmini are:
 ## 5.659959408 0.9045192397 0.9905485124 0.03362630308 0.549246957 
-## Totally it used 30.012521 secs
-## No. of function call is: 1570
+## Totally it used 30.006043 secs
+## No. of function call is: 1648
 ```
 
 ```r
@@ -1135,74 +1135,74 @@ t_k_linf %>%
   <tr>
    <td style="text-align:left;"> GA </td>
    <td style="text-align:left;"> BS </td>
-   <td style="text-align:right;"> 6.058000 </td>
-   <td style="text-align:right;"> 0.6740 </td>
-   <td style="text-align:right;"> 6.018000 </td>
-   <td style="text-align:right;"> 0.726000 </td>
+   <td style="text-align:right;"> 6.00100 </td>
+   <td style="text-align:right;"> 0.752 </td>
+   <td style="text-align:right;"> 5.907000 </td>
+   <td style="text-align:right;"> 0.82000 </td>
   </tr>
   <tr>
    <td style="text-align:left;"> SA </td>
    <td style="text-align:left;"> BS </td>
-   <td style="text-align:right;"> 5.924000 </td>
-   <td style="text-align:right;"> 0.8310 </td>
+   <td style="text-align:right;"> 5.92400 </td>
+   <td style="text-align:right;"> 0.831 </td>
    <td style="text-align:right;"> 5.594000 </td>
-   <td style="text-align:right;"> 0.604000 </td>
+   <td style="text-align:right;"> 0.60400 </td>
   </tr>
   <tr>
    <td style="text-align:left;"> GA </td>
    <td style="text-align:left;"> EI </td>
-   <td style="text-align:right;"> 6.675000 </td>
-   <td style="text-align:right;"> 0.5570 </td>
-   <td style="text-align:right;"> 6.865000 </td>
-   <td style="text-align:right;"> 0.834000 </td>
+   <td style="text-align:right;"> 5.90300 </td>
+   <td style="text-align:right;"> 0.634 </td>
+   <td style="text-align:right;"> 7.249000 </td>
+   <td style="text-align:right;"> 0.78500 </td>
   </tr>
   <tr>
    <td style="text-align:left;"> SA </td>
    <td style="text-align:left;"> EI </td>
-   <td style="text-align:right;"> 5.585000 </td>
-   <td style="text-align:right;"> 0.9580 </td>
+   <td style="text-align:right;"> 5.58500 </td>
+   <td style="text-align:right;"> 0.958 </td>
    <td style="text-align:right;"> 7.314000 </td>
-   <td style="text-align:right;"> 0.941000 </td>
+   <td style="text-align:right;"> 0.94100 </td>
   </tr>
   <tr>
    <td style="text-align:left;"> GA </td>
    <td style="text-align:left;"> SSWI </td>
-   <td style="text-align:right;"> 6.487000 </td>
-   <td style="text-align:right;"> 0.7600 </td>
-   <td style="text-align:right;"> 5.739000 </td>
-   <td style="text-align:right;"> 0.718000 </td>
+   <td style="text-align:right;"> 6.83800 </td>
+   <td style="text-align:right;"> 0.501 </td>
+   <td style="text-align:right;"> 6.582000 </td>
+   <td style="text-align:right;"> 0.71200 </td>
   </tr>
   <tr>
    <td style="text-align:left;"> SA </td>
    <td style="text-align:left;"> SSWI </td>
-   <td style="text-align:right;"> 6.003000 </td>
-   <td style="text-align:right;"> 0.6590 </td>
+   <td style="text-align:right;"> 6.00300 </td>
+   <td style="text-align:right;"> 0.659 </td>
    <td style="text-align:right;"> 6.419000 </td>
-   <td style="text-align:right;"> 0.768000 </td>
+   <td style="text-align:right;"> 0.76800 </td>
   </tr>
   <tr>
    <td style="text-align:left;"> GA </td>
    <td style="text-align:left;"> GS </td>
-   <td style="text-align:right;"> 6.009000 </td>
-   <td style="text-align:right;"> 0.6840 </td>
-   <td style="text-align:right;"> 6.719000 </td>
-   <td style="text-align:right;"> 0.355000 </td>
+   <td style="text-align:right;"> 5.98800 </td>
+   <td style="text-align:right;"> 0.584 </td>
+   <td style="text-align:right;"> 7.183000 </td>
+   <td style="text-align:right;"> 0.58300 </td>
   </tr>
   <tr>
    <td style="text-align:left;"> SA </td>
    <td style="text-align:left;"> GS </td>
-   <td style="text-align:right;"> 5.660000 </td>
-   <td style="text-align:right;"> 0.9050 </td>
+   <td style="text-align:right;"> 5.66000 </td>
+   <td style="text-align:right;"> 0.905 </td>
    <td style="text-align:right;"> 5.789000 </td>
-   <td style="text-align:right;"> 0.713000 </td>
+   <td style="text-align:right;"> 0.71300 </td>
   </tr>
   <tr>
    <td style="text-align:left;"> Mean </td>
    <td style="text-align:left;"> NA </td>
-   <td style="text-align:right;"> 6.050125 </td>
-   <td style="text-align:right;"> 0.7535 </td>
-   <td style="text-align:right;"> 6.307125 </td>
-   <td style="text-align:right;"> 0.707375 </td>
+   <td style="text-align:right;"> 5.98775 </td>
+   <td style="text-align:right;"> 0.728 </td>
+   <td style="text-align:right;"> 6.504625 </td>
+   <td style="text-align:right;"> 0.74075 </td>
   </tr>
 </tbody>
 </table>
@@ -1512,37 +1512,37 @@ Total_M_Mean_male  %>%
 <tbody>
   <tr>
    <td style="text-align:left;"> Alverson and Carney (1975) </td>
-   <td style="text-align:right;"> 0.6450 </td>
-   <td style="text-align:right;"> 0.7330 </td>
-   <td style="text-align:right;"> 1.106 </td>
-   <td style="text-align:right;"> 0.7400 </td>
+   <td style="text-align:right;"> 0.6840 </td>
+   <td style="text-align:right;"> 0.6560 </td>
+   <td style="text-align:right;"> 0.8630 </td>
+   <td style="text-align:right;"> 0.7450 </td>
   </tr>
   <tr>
    <td style="text-align:left;"> Hoenig (1983) - Joint Equation </td>
    <td style="text-align:right;"> 0.8690 </td>
    <td style="text-align:right;"> 0.8690 </td>
-   <td style="text-align:right;"> 0.869 </td>
+   <td style="text-align:right;"> 0.8690 </td>
    <td style="text-align:right;"> 0.8690 </td>
   </tr>
   <tr>
    <td style="text-align:left;"> Hoenig (1983) - Fish Equation </td>
    <td style="text-align:right;"> 0.8470 </td>
    <td style="text-align:right;"> 0.8470 </td>
-   <td style="text-align:right;"> 0.847 </td>
+   <td style="text-align:right;"> 0.8470 </td>
    <td style="text-align:right;"> 0.8470 </td>
   </tr>
   <tr>
    <td style="text-align:left;"> Pauly (1980) - Length Equation </td>
-   <td style="text-align:right;"> 1.0770 </td>
-   <td style="text-align:right;"> 1.0210 </td>
-   <td style="text-align:right;"> 0.620 </td>
-   <td style="text-align:right;"> 1.0270 </td>
+   <td style="text-align:right;"> 1.0200 </td>
+   <td style="text-align:right;"> 1.1110 </td>
+   <td style="text-align:right;"> 0.8420 </td>
+   <td style="text-align:right;"> 0.9830 </td>
   </tr>
   <tr>
    <td style="text-align:left;"> Rikhter and Efanov (1976) </td>
    <td style="text-align:right;"> 0.7680 </td>
    <td style="text-align:right;"> 0.7680 </td>
-   <td style="text-align:right;"> 0.768 </td>
+   <td style="text-align:right;"> 0.7680 </td>
    <td style="text-align:right;"> 0.7680 </td>
   </tr>
   <tr>
@@ -1554,10 +1554,10 @@ Total_M_Mean_male  %>%
   </tr>
   <tr>
    <td style="text-align:left;"> Mean </td>
-   <td style="text-align:right;"> 0.8412 </td>
-   <td style="text-align:right;"> 0.8476 </td>
-   <td style="text-align:right;"> 0.842 </td>
+   <td style="text-align:right;"> 0.8376 </td>
    <td style="text-align:right;"> 0.8502 </td>
+   <td style="text-align:right;"> 0.8378 </td>
+   <td style="text-align:right;"> 0.8424 </td>
   </tr>
 </tbody>
 </table>
@@ -1586,45 +1586,45 @@ Total_M_Mean_femal  %>%
 <tbody>
   <tr>
    <td style="text-align:left;"> Alverson and Carney (1975) </td>
-   <td style="text-align:right;"> 0.8880 </td>
-   <td style="text-align:right;"> 0.7780 </td>
-   <td style="text-align:right;"> 0.769 </td>
-   <td style="text-align:right;"> 0.7040 </td>
+   <td style="text-align:right;"> 0.8140 </td>
+   <td style="text-align:right;"> 0.711 </td>
+   <td style="text-align:right;"> 0.8620 </td>
+   <td style="text-align:right;"> 0.9450 </td>
   </tr>
   <tr>
    <td style="text-align:left;"> Hoenig (1983) - Joint Equation </td>
    <td style="text-align:right;"> 0.8690 </td>
-   <td style="text-align:right;"> 0.8690 </td>
    <td style="text-align:right;"> 0.869 </td>
+   <td style="text-align:right;"> 0.8690 </td>
    <td style="text-align:right;"> 0.8690 </td>
   </tr>
   <tr>
    <td style="text-align:left;"> Hoenig (1983) - Fish Equation </td>
    <td style="text-align:right;"> 0.8470 </td>
-   <td style="text-align:right;"> 0.8470 </td>
    <td style="text-align:right;"> 0.847 </td>
+   <td style="text-align:right;"> 0.8470 </td>
    <td style="text-align:right;"> 0.8470 </td>
   </tr>
   <tr>
    <td style="text-align:left;"> Pauly (1980) - Length Equation </td>
-   <td style="text-align:right;"> 0.8340 </td>
-   <td style="text-align:right;"> 0.9710 </td>
-   <td style="text-align:right;"> 0.982 </td>
-   <td style="text-align:right;"> 1.0300 </td>
+   <td style="text-align:right;"> 0.9390 </td>
+   <td style="text-align:right;"> 1.045 </td>
+   <td style="text-align:right;"> 0.8860 </td>
+   <td style="text-align:right;"> 0.7730 </td>
   </tr>
   <tr>
    <td style="text-align:left;"> Rikhter and Efanov (1976) </td>
    <td style="text-align:right;"> 0.7680 </td>
-   <td style="text-align:right;"> 0.7680 </td>
    <td style="text-align:right;"> 0.768 </td>
+   <td style="text-align:right;"> 0.7680 </td>
    <td style="text-align:right;"> 0.7680 </td>
   </tr>
   <tr>
    <td style="text-align:left;"> Mean </td>
-   <td style="text-align:right;"> 0.8412 </td>
-   <td style="text-align:right;"> 0.8466 </td>
-   <td style="text-align:right;"> 0.847 </td>
-   <td style="text-align:right;"> 0.8436 </td>
+   <td style="text-align:right;"> 0.8474 </td>
+   <td style="text-align:right;"> 0.848 </td>
+   <td style="text-align:right;"> 0.8464 </td>
+   <td style="text-align:right;"> 0.8404 </td>
   </tr>
 </tbody>
 </table>
@@ -1721,13 +1721,234 @@ both plot
 ggarrange(m_female, m_male, 
           common.legend = TRUE,
           ncol=1,
-          legend="bottom")
+          legend="right")
 ```
 
 <img src="index_files/figure-html/unnamed-chunk-33-1.jpeg" style="display: block; margin: auto;" />
-Statistical diferences
+Statistical diferences in female
 
 
+```r
+# Realizar la prueba ANOVA
+anova_result <- aov(Value ~ Stratum, data = df_long_male %>% drop_na())
+summary(anova_result)
+```
+
+```
+##             Df  Sum Sq  Mean Sq F value Pr(>F)
+## Stratum      3 0.00063 0.000209   0.019  0.996
+## Residuals   20 0.21773 0.010887
+```
+
+```r
+# Realizar la prueba post hoc de Tukey
+tukey_result <- TukeyHSD(anova_result)
+# Convertir los resultados de Tukey a un data frame
+tukey_df <- as.data.frame(tukey_result$Stratum)
+tukey_df$pair <- rownames(tukey_df)
+tukey_df <- tukey_df %>%
+  mutate(Stratum1 = sapply(strsplit(pair, "-"), `[`, 1),
+         Stratum2 = sapply(strsplit(pair, "-"), `[`, 2))
+
+# Seleccionar las columnas relevantes
+tukey_table <- tukey_df %>%
+  dplyr::select(Stratum1, Stratum2, diff, `p adj`, `lwr`, `upr`) %>%
+  rename(Difference = diff, 
+         P_value = `p adj`, 
+         Lower_CI = `lwr`, 
+         Upper_CI = `upr`)
+
+
+kbl(tukey_table, 
+    caption = "Test to differences between strata")  |> 
+  kable_classic(full_width = F, 
+                html_font = "Cambria") |> 
+  kable_styling(bootstrap_options = "striped", 
+                latex_options = "striped")
+```
+
+<table class=" lightable-classic table table-striped" style="color: black; font-family: Cambria; width: auto !important; margin-left: auto; margin-right: auto; color: black; margin-left: auto; margin-right: auto;">
+<caption>Test to differences between strata</caption>
+ <thead>
+  <tr>
+   <th style="text-align:left;">   </th>
+   <th style="text-align:left;"> Stratum1 </th>
+   <th style="text-align:left;"> Stratum2 </th>
+   <th style="text-align:right;"> Difference </th>
+   <th style="text-align:right;"> P_value </th>
+   <th style="text-align:right;"> Lower_CI </th>
+   <th style="text-align:right;"> Upper_CI </th>
+  </tr>
+ </thead>
+<tbody>
+  <tr>
+   <td style="text-align:left;"> EI-BS </td>
+   <td style="text-align:left;"> EI </td>
+   <td style="text-align:left;"> BS </td>
+   <td style="text-align:right;"> -0.0126 </td>
+   <td style="text-align:right;"> 0.9966554 </td>
+   <td style="text-align:right;"> -0.1812089 </td>
+   <td style="text-align:right;"> 0.1560089 </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> GS-BS </td>
+   <td style="text-align:left;"> GS </td>
+   <td style="text-align:left;"> BS </td>
+   <td style="text-align:right;"> -0.0124 </td>
+   <td style="text-align:right;"> 0.9968102 </td>
+   <td style="text-align:right;"> -0.1810089 </td>
+   <td style="text-align:right;"> 0.1562089 </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> SSWI-BS </td>
+   <td style="text-align:left;"> SSWI </td>
+   <td style="text-align:left;"> BS </td>
+   <td style="text-align:right;"> -0.0078 </td>
+   <td style="text-align:right;"> 0.9991973 </td>
+   <td style="text-align:right;"> -0.1764089 </td>
+   <td style="text-align:right;"> 0.1608089 </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> GS-EI </td>
+   <td style="text-align:left;"> GS </td>
+   <td style="text-align:left;"> EI </td>
+   <td style="text-align:right;"> 0.0002 </td>
+   <td style="text-align:right;"> 1.0000000 </td>
+   <td style="text-align:right;"> -0.1684089 </td>
+   <td style="text-align:right;"> 0.1688089 </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> SSWI-EI </td>
+   <td style="text-align:left;"> SSWI </td>
+   <td style="text-align:left;"> EI </td>
+   <td style="text-align:right;"> 0.0048 </td>
+   <td style="text-align:right;"> 0.9998121 </td>
+   <td style="text-align:right;"> -0.1638089 </td>
+   <td style="text-align:right;"> 0.1734089 </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> SSWI-GS </td>
+   <td style="text-align:left;"> SSWI </td>
+   <td style="text-align:left;"> GS </td>
+   <td style="text-align:right;"> 0.0046 </td>
+   <td style="text-align:right;"> 0.9998346 </td>
+   <td style="text-align:right;"> -0.1640089 </td>
+   <td style="text-align:right;"> 0.1732089 </td>
+  </tr>
+</tbody>
+</table>
+Statistical diferences in female
+
+
+```r
+# Realizar la prueba ANOVA
+anova_result_ma <- aov(Value ~ Stratum, data = df_long %>% drop_na())
+summary(anova_result_ma)
+```
+
+```
+##             Df  Sum Sq  Mean Sq F value Pr(>F)
+## Stratum      3 0.00022 0.000073   0.013  0.998
+## Residuals   20 0.11075 0.005538
+```
+
+```r
+# Realizar la prueba post hoc de Tukey
+tukey_result_ma <- TukeyHSD(anova_result_ma)
+# Convertir los resultados de Tukey a un data frame
+tukey_df_ma <- as.data.frame(tukey_result_ma$Stratum)
+tukey_df_ma$pair <- rownames(tukey_df_ma)
+tukey_df_ma <- tukey_df_ma %>%
+  mutate(Stratum1 = sapply(strsplit(pair, "-"), `[`, 1),
+         Stratum2 = sapply(strsplit(pair, "-"), `[`, 2))
+
+# Seleccionar las columnas relevantes
+tukey_table_ma <- tukey_df_ma %>%
+  dplyr::select(Stratum1, Stratum2, diff, `p adj`, `lwr`, `upr`) %>%
+  rename(Difference = diff, 
+         P_value = `p adj`, 
+         Lower_CI = `lwr`, 
+         Upper_CI = `upr`)
+
+
+kbl(tukey_table_ma, 
+    caption = "Test to differences between strata")  |> 
+  kable_classic(full_width = F, 
+                html_font = "Cambria") |> 
+  kable_styling(bootstrap_options = "striped", 
+                latex_options = "striped")
+```
+
+<table class=" lightable-classic table table-striped" style="color: black; font-family: Cambria; width: auto !important; margin-left: auto; margin-right: auto; color: black; margin-left: auto; margin-right: auto;">
+<caption>Test to differences between strata</caption>
+ <thead>
+  <tr>
+   <th style="text-align:left;">   </th>
+   <th style="text-align:left;"> Stratum1 </th>
+   <th style="text-align:left;"> Stratum2 </th>
+   <th style="text-align:right;"> Difference </th>
+   <th style="text-align:right;"> P_value </th>
+   <th style="text-align:right;"> Lower_CI </th>
+   <th style="text-align:right;"> Upper_CI </th>
+  </tr>
+ </thead>
+<tbody>
+  <tr>
+   <td style="text-align:left;"> EI-BS </td>
+   <td style="text-align:left;"> EI </td>
+   <td style="text-align:left;"> BS </td>
+   <td style="text-align:right;"> -0.0006 </td>
+   <td style="text-align:right;"> 0.9999990 </td>
+   <td style="text-align:right;"> -0.1208531 </td>
+   <td style="text-align:right;"> 0.1196531 </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> GS-BS </td>
+   <td style="text-align:left;"> GS </td>
+   <td style="text-align:left;"> BS </td>
+   <td style="text-align:right;"> -0.0016 </td>
+   <td style="text-align:right;"> 0.9999808 </td>
+   <td style="text-align:right;"> -0.1218531 </td>
+   <td style="text-align:right;"> 0.1186531 </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> SSWI-BS </td>
+   <td style="text-align:left;"> SSWI </td>
+   <td style="text-align:left;"> BS </td>
+   <td style="text-align:right;"> -0.0076 </td>
+   <td style="text-align:right;"> 0.9979660 </td>
+   <td style="text-align:right;"> -0.1278531 </td>
+   <td style="text-align:right;"> 0.1126531 </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> GS-EI </td>
+   <td style="text-align:left;"> GS </td>
+   <td style="text-align:left;"> EI </td>
+   <td style="text-align:right;"> -0.0010 </td>
+   <td style="text-align:right;"> 0.9999953 </td>
+   <td style="text-align:right;"> -0.1212531 </td>
+   <td style="text-align:right;"> 0.1192531 </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> SSWI-EI </td>
+   <td style="text-align:left;"> SSWI </td>
+   <td style="text-align:left;"> EI </td>
+   <td style="text-align:right;"> -0.0070 </td>
+   <td style="text-align:right;"> 0.9984075 </td>
+   <td style="text-align:right;"> -0.1272531 </td>
+   <td style="text-align:right;"> 0.1132531 </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> SSWI-GS </td>
+   <td style="text-align:left;"> SSWI </td>
+   <td style="text-align:left;"> GS </td>
+   <td style="text-align:right;"> -0.0060 </td>
+   <td style="text-align:right;"> 0.9989941 </td>
+   <td style="text-align:right;"> -0.1262531 </td>
+   <td style="text-align:right;"> 0.1142531 </td>
+  </tr>
+</tbody>
+</table>
 
 
 # References
