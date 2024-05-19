@@ -1,7 +1,7 @@
 ---
 title: "Derive growth parameters and natural mortality rates for krill while accounting for spatial heterogeneity in the Western Antarctic Peninsula."
 subtitle: "Working Paper to be submitted in a CCAMLR EMM-WG 2024"
-author: "Mardones, M; Cárdenas, C."
+author: "Mardones, M; Cárdenas, C., Krüger, L., Santa Cruz, F."
 date:  "`r format(Sys.time(), '%d %B, %Y')`"
 bibliography: param.bib
 csl: apa.csl
@@ -263,7 +263,7 @@ kbl(tabla_proporcion,
 
 
 ```{r}
-#MACHO
+#MALE
 
 sf5fil <- sf5 |>
   filter(ID %in% c("BS", "EI", "GERLASHE", "SSIW"),
@@ -294,7 +294,7 @@ for (id in unique(sf5fil$ID)) {
        main = nombre)
 }
 
-#HEMBRA
+#FEMALE
 
 sf5filhe <- sf5 |>
   filter(ID %in% c("BS", "EI", "GERLASHE", "SSIW"),
@@ -329,12 +329,22 @@ for (id in unique(sf5filhe$ID)) {
 Identified difference in length distribution just to male:
 
 ```{r message=FALSE}
+Bhattacharya(lfq_results$EI)
+```
 
-ei <- Bhattacharya(lfq_results$EI)
-ss <- Bhattacharya(lfq_results$SSIW)
-bs <- Bhattacharya(lfq_results$BS)
-gs <- Bhattacharya(lfq_results$GERLASHE)
 
+```{r message=FALSE}
+Bhattacharya(lfq_results$SSIW)
+```
+
+
+```{r message=FALSE}
+Bhattacharya(lfq_results$BS)
+```
+
+
+```{r message=FALSE}
+Bhattacharya(lfq_results$GERLASHE)
 ```
 
 now we assign objet to male `lfq_result` and female `lfq_resulthe` and plot with `lfqRestructure()`
@@ -437,7 +447,7 @@ res_GAsswi <- ELEFAN_GA(lfq_results$SSIW,
                     agemax = 5,
                     addl.sqrt = TRUE,
                      low_par = list(Linf = 5,
-                                   K = 0.01,
+                                   K = 0.5,
                                    t_anchor = 0, 
                                    C = 0, 
                                    ts = 0),
@@ -478,7 +488,7 @@ res_GAei <- ELEFAN_GA(lfq_results$EI,
                     agemax = 5,
                     addl.sqrt = TRUE,
                      low_par = list(Linf = 5,
-                                   K = 0.01,
+                                   K = 0.5,
                                    t_anchor = 0, 
                                    C = 0, 
                                    ts = 0),
@@ -767,15 +777,15 @@ SAsswihe <- unlist(res_SAsswihe$par)
 GAgshe <- unlist(res_GAgshe$par)
 SAgshe <- unlist(res_SAgshe$par)
 # join 
-t_k_linf <- rbind(GAbs[1:2],
+t_k_linf_m <- rbind(GAbs[1:2],
                   SAbs[1:2],
                   GAei[1:2],
                   SAei[1:2],
                   GAsswi[1:2],
                   SAsswi[1:2],
                   GAgs[1:2],
-                  SAgs[1:2],
-                  GAbshe[1:2],
+                  SAgs[1:2])
+t_k_linf_f <- rbind(GAbshe[1:2],
                   SAbshe[1:2],
                   GAeihe[1:2],
                   SAeihe[1:2],
@@ -783,47 +793,130 @@ t_k_linf <- rbind(GAbs[1:2],
                   SAsswihe[1:2],
                   GAgshe[1:2],
                   SAgshe[1:2])
-                  
-                  
-                
+row_names <- c("GA BS", "SA BS", "GA EI", 
+                 "SA EI", "GA SSWI", "SA SSWI",
+                 "GA GS", "SA GS")
+rownames(t_k_linf_m) <- row_names
+rownames(t_k_linf_f) <- row_names
+col_names_m <- c("L inf Male", "K Male")
+col_names_f <- c("L inf Female", "K Female")
+colnames(t_k_linf_m) <- col_names_m
+colnames(t_k_linf_f) <- col_names_f
+
+
+total_para <- round(cbind(t_k_linf_f,
+                    t_k_linf_m),3)
+t_k_linf_total <- as_tibble(total_para, rownames = "group")
+
+
+means <- t_k_linf_total %>%
+  summarise(across(where(is.numeric), ~ mean(.x, na.rm = TRUE))) %>%
+  mutate(group = "Mean")
+
+t_k_linf <- bind_rows(t_k_linf_total, means)
 ```
+
+```{r eval=FALSE}
+write_csv(t_k_linf, "parametros_krill.csv")
+```
+
+
 total Table with `L_inf_` and `K`
 
 ```{r}
-
 t_k_linf %>%
+  separate(group, into = c("METHOD", "STRATA"), sep = " ") %>% 
   kbl(booktabs = T,
       position="ht!",
-    caption = "Parametres LH in different strata with 3 types of algoritms") %>%
+    caption = "Parametres LH in different strata with 2 algoritms to estimation") %>%
   kable_styling(latex_options = c("striped",
                                   "condensed"),
                 full_width = FALSE)
 
 ```
 
-Made VB curves by methot and strata
+Made VB curves by methot and strata by male
+
+separated group
+
 
 ```{r}
-# Definir parámetros de la curva de von Bertalanffy para diferentes grupos
+t_k_linf_sep <- t_k_linf %>% 
+  filter(group != "Mean") %>% 
+   separate(group, into = c("METHOD", "STRATA"), sep = " ")
+```
 
-# Crear una secuencia de edades para predecir la longitud
-edades <- seq(0, 10, by = 0.1)
 
-# Generar datos para cada grupo
-datos <- do.call(rbind, lapply(1:nrow(parametros), function(i) {
-  longitudes_pred <- parametros$L_inf[i] * (1 - exp(-parametros$K[i] * (edades - parametros$t0[i])))
-  data.frame(grupo = parametros$grupo[i], edad = edades, longitud = longitudes_pred)
-}))
+```{r}
+# Definir la función de Von Bertalanffy
+von_bertalanffy <- function(t, L_inf, K) {
+  L_inf * (1 - exp(-K * (t-t0)))
+}
 
-# Tramar las curvas de von Bertalanffy utilizando ggplot2
-ggplot(datos, aes(x = edad, y = longitud, color = grupo)) +
-  geom_line()+
-  labs(title = "Curvas de von Bertalanffy para diferentes grupos",
-       x = "Edad",
-       y = "Longitud") +
-  theme_few()
+# Generar una secuencia de tiempos (por ejemplo, de 0 a 5 años)
+t0 <- -0.3
+time <- seq(0, 7, by = 0.1)
+
+# Calcular longitud esperada para cada zona y tiempo
+df_curves_male <- t_k_linf_sep %>%
+  dplyr::select(c(1:2, 5:6)) %>% 
+  rowwise() %>%
+  mutate(length = list(von_bertalanffy(time, `L inf Male`, `K Male`))) %>%
+  unnest(length)
+# Agregar el vector de tiempo al DataFrame df_curves
+df_curves_male$time <- rep(time, nrow(t_k_linf_sep))
+# Graficar con ggplot
+male <- ggplot(df_curves_male,
+               aes(x = time, 
+                              y = length,
+                              group=STRATA,
+                              colour=STRATA)) +
+  geom_line(linewidth=1.1) +
+  labs(title = "Male",
+       x = "years",
+       y = "Length (cm)") +
+  theme_few()+
+  facet_wrap(.~METHOD)+
+  scale_colour_viridis_d(option="H",
+                         name="Strata")
 
 ```
+Made VB curves by methot and strata by female
+
+```{r}
+# Calcular longitud esperada para cada zona y tiempo
+df_curves_female <- t_k_linf_sep %>%
+  dplyr::select(c(1:4)) %>% 
+  rowwise() %>%
+  mutate(length = list(von_bertalanffy(time, `L inf Female`, `K Female`))) %>%
+  unnest(length)
+# Agregar el vector de tiempo al DataFrame df_curves
+df_curves_female$time <- rep(time, nrow(t_k_linf_sep))
+# Graficar con ggplot
+female <- ggplot(df_curves_female,
+               aes(x = time, 
+                              y = length,
+                              group=STRATA,
+                              colour=STRATA)) +
+  geom_line(linewidth=1.1) +
+  labs(title = "Female",
+       x = "years",
+       y = "Length (cm)") +
+  theme_few()+
+  facet_wrap(.~METHOD)+
+  scale_colour_viridis_d(option="H",
+                         name="Strata")
+
+```
+
+both plot
+
+```{r fig.width=10, fig.height=8}
+ggarrange(female, male, common.legend = TRUE,
+          ncol=1,
+          legend="bottom")
+```
+
 
 ### Method NO LINEAR MODEL 
 
@@ -831,18 +924,37 @@ ggplot(datos, aes(x = edad, y = longitud, color = grupo)) +
 We use firts a descomposition methot with library `mixR` and then we use `nlmer` (@Bates2015) to calcularte parametrs
 
 ```{r eval=FALSE, echo=TRUE}
-# Agregar la nueva columna con los intervalos de longitud total
-sf6 <- sf5 |> 
-  drop_na(length_total_cm) |> 
-  filter(ID %in% "GERLASHE",
-         Year==2018,
-         Month==5)
+sf52020 <- sf5 %>% 
+  filter(sex_code %in% c("F", "M")) %>% 
+  drop_na(length_total_cm)
 
-sf5a <-  sf5 |> 
-  drop_na(length_total_cm ) |> 
-  filter(ID %in% "BS",
-         Year==2018)
-  
+# Lista para almacenar los modelos
+modelos <- list()
+
+# Lista de estratos y sexos
+estratos <- unique(sf52020$ID)
+sexos <- unique(sf52020$sex_code)
+
+# Bucle para ajustar modelos para cada combinación de estrato y sexo
+for (estrato in estratos) {
+  for (sexo in sexos) {
+    # Filtrar los datos para el estrato y sexo actual
+    datos_subset <- sf52020%>% filter(ID == estrato, sex_code == sexo)
+    
+    # Aplicar mixfit y guardar el modelo en la lista
+    mod <- mixfit(datos_subset$length_total_cm, ncomp = 4,
+                   pi = c(0.5, 0.5, 0.5, 0.5), 
+                   mu = c(3, 4, 5, 6), 
+                   sd = c(0.2, 0.2, 0.2, 0.2))
+    
+    modelos[[paste(estrato, sexo, sep = "_")]] <- mod
+  }
+}
+
+# Puedes acceder a cada modelo usando modelos$nombre_del_estrato_y_sexo
+# Por ejemplo, para acceder al modelo para el estrato "A" y sexo "M":
+# modelos$A_M
+
 # compruebo el n de comp
 
 s_weibull = select(sf5a$length_total_cm, ncomp = 2:6, family = 'weibull')
@@ -877,8 +989,11 @@ mod1_ev = mixfit(sf6$length_total_cm, ncomp = 2, ev = TRUE)
 ## Natural Mortality in Krill
 
 In this exercises different bioanalogic methods are tested with General Algoritm
+
+#### MALE
+
 ```{r}
-MSSWI <- c(res_GAsswi$par, list(agemax = res_RSAsswi$agemax))
+MSSWI <- c(res_GAsswi$par, list(agemax = res_GAsswi$agemax))
 # use the function M_empirical to estimate natural mortality
 Msswi <- M_empirical(Linf = MSSWI$Linf, K_l = MSSWI$K, 
                   tmax = MSSWI$agemax, temp = 5,
@@ -889,7 +1004,7 @@ Msswi <- M_empirical(Linf = MSSWI$Linf, K_l = MSSWI$K,
                              "RikhterEfanov"
                              ))
 # Bransfield
-BS <- c(res_GAbs$par, list(agemax = res_RSAbs$agemax))
+BS <- c(res_GAbs$par, list(agemax = res_GAbs$agemax))
 
 # use the function M_empirical to estimate natural mortality
 Mbs <- M_empirical(Linf = BS$Linf, K_l = BS$K, 
@@ -901,7 +1016,7 @@ Mbs <- M_empirical(Linf = BS$Linf, K_l = BS$K,
                              "RikhterEfanov"
                              ))
 # GERLASHE
-GS <- c(res_GAgs$par, list(agemax = res_RSAgs$agemax))
+GS <- c(res_GAgs$par, list(agemax = res_GAgs$agemax))
 
 # use the function M_empirical to estimate natural mortality
 Mgs <- M_empirical(Linf = GS$Linf, K_l = GS$K, 
@@ -913,7 +1028,7 @@ Mgs <- M_empirical(Linf = GS$Linf, K_l = GS$K,
                              "RikhterEfanov"
                              ))
 # Elephand Island
-MEI <- c(res_GAei$par, list(agemax = res_RSAei$agemax))
+MEI <- c(res_GAei$par, list(agemax = res_GAei$agemax))
 
 # use the function M_empirical to estimate natural mortality
 Mei <- M_empirical(Linf = MEI$Linf, K_l = MEI$K, 
@@ -926,27 +1041,187 @@ Mei <- M_empirical(Linf = MEI$Linf, K_l = MEI$K,
                              ))
 ```
 
+#### FEMALE
+
+```{r}
+MSSWIhe <- c(res_GAsswihe$par, list(agemax = res_GAsswihe$agemax))
+# use the function M_empirical to estimate natural mortality
+Msswihe <- M_empirical(Linf = MSSWIhe$Linf, K_l = MSSWIhe$K, 
+                  tmax = MSSWIhe$agemax, temp = 5,
+                  tm50 = 2,
+                  method = c("Pauly_Linf", 
+                            "Hoenig",
+                             "AlversonCarney",
+                             "RikhterEfanov"
+                             ))
+# Bransfield
+BShe <- c(res_GAbshe$par, list(agemax = res_GAbshe$agemax))
+
+# use the function M_empirical to estimate natural mortality
+Mbshe <- M_empirical(Linf = BShe$Linf, K_l = BShe$K, 
+                  tmax = BShe$agemax, temp = 5,
+                  tm50 = 2,
+                  method = c("Pauly_Linf", 
+                              "Hoenig",
+                             "AlversonCarney",
+                             "RikhterEfanov"
+                             ))
+# GERLASHE
+GShe <- c(res_GAgshe$par, list(agemax = res_GAgshe$agemax))
+
+# use the function M_empirical to estimate natural mortality
+Mgshe <- M_empirical(Linf = GShe$Linf, K_l = GShe$K, 
+                  tmax = GShe$agemax, temp = 5,
+                   tm50 = 2,
+                  method = c("Pauly_Linf", 
+                             "Hoenig",
+                             "AlversonCarney",
+                             "RikhterEfanov"
+                             ))
+# Elephand Island
+MEIhe <- c(res_GAeihe$par, list(agemax = res_GAeihe$agemax))
+
+# use the function M_empirical to estimate natural mortality
+Meihe <- M_empirical(Linf = MEIhe$Linf, K_l = MEIhe$K, 
+                  tmax = MEIhe$agemax, temp = 5,
+                  tm50 = 2,
+                  method = c("Pauly_Linf", 
+                             "Hoenig",
+                             "AlversonCarney",
+                             "RikhterEfanov"
+                             ))
+```
+
 ```{r}
 # junto las bases
 
-Total_M <- cbind(Mei, Mbs, Mgs, Msswi)
-colnames(Total_M) <- c("EI", "BS" , "GS", "SSWI")
-mean <- colMeans(Total_M, na.rm = TRUE)
+Total_M_male <- cbind(Mei, Mbs, Mgs, Msswi)
+colnames(Total_M_male) <- c("EI", "BS" , "GS", "SSWI")
+mean_m <- colMeans(Total_M_male, na.rm = TRUE)
+Total_M_Mean_male <- rbind(Total_M_male, Mean = mean_m)
 # Agregar los promedios como una nueva fila al final del array
-Total_M_Mean <- rbind(Total_M, Mean = mean)
+
+Total_M_femal <- cbind(Meihe, Mbshe, Mgshe, Msswihe)
+colnames(Total_M_femal) <- c("EI", "BS" , "GS", "SSWI")
+mean_m <- colMeans(Total_M_femal, na.rm = TRUE)
+Total_M_Mean_femal <- rbind(Total_M_femal, Mean = mean_m)
 ```
 
 
 ```{r}
-Total_M_Mean  %>%
+Total_M_Mean_male  %>%
   kbl(booktabs = T,
       position="ht!",
-    caption = "Estimated M by Strata") %>%
+    caption = "Estimated M by Strata for Male") %>%
+  kable_styling(latex_options = c("striped",
+                                  "condensed"),
+                full_width = FALSE)
+
+Total_M_Mean_femal  %>%
+  kbl(booktabs = T,
+      position="ht!",
+    caption = "Estimated M by Strata for Female") %>%
   kable_styling(latex_options = c("striped",
                                   "condensed"),
                 full_width = FALSE)
 
 ```
+
+
+Plot to female
+```{r}
+# Convertir la matriz a data.frame
+df_female <- as.data.frame(Total_M_Mean_femal)
+
+# Agregar la columna de métodos
+df_female$Method <- rownames(Total_M_Mean_femal)
+
+# Convertir el data.frame a formato largo
+df_long <- df_female %>%
+  pivot_longer(cols = EI:SSWI, 
+               names_to = "Stratum", 
+               values_to = "Value")
+
+# Dot Plot
+m_female<- ggplot(df_long %>%
+                              drop_na() %>%
+                              filter(Method != "Mean"), 
+                            aes(x = Stratum, 
+                                y = Value,
+                                fill = Method)) +
+    geom_point(size = 3,     
+              shape = 21,   
+              color = "black") + 
+  geom_text_repel(aes(label = round(Value, 3)),  
+                  size = 3,                      
+                  box.padding = 0.35,            
+                  point.padding = 0.5,         
+                  segment.color = 'grey50',
+                  min.segment.length = 0, 
+                  nudge_y = 0.05,   
+                  direction = "both") +
+  labs(title = "Female",
+       x = "",
+       y = "Natural Mortality",
+       fill = "Method") +
+  theme_few() +
+  scale_fill_viridis_d(option = "H") +
+  ylim(0, 2)
+```
+
+Plot to male
+```{r}
+# Convertir la matriz a data.frame
+df_male <- as.data.frame(Total_M_Mean_male)
+
+# Agregar la columna de métodos
+df_male$Method <- rownames(Total_M_Mean_male)
+
+# Convertir el data.frame a formato largo
+df_long_male <- df_male %>%
+  pivot_longer(cols = EI:SSWI, 
+               names_to = "Stratum", 
+               values_to = "Value") 
+
+# Dot Plot
+m_male<- ggplot(df_long_male %>%
+                              drop_na() %>%
+                              filter(Method != "Mean"), 
+                            aes(x = Stratum, 
+                                y = Value,
+                                fill = Method)) +
+  geom_point(size = 3,     
+              shape = 21,   
+              color = "black") +  
+  geom_text_repel(aes(label = round(Value, 3)),  
+                  size = 3,                      
+                  box.padding = 0.35,            
+                  point.padding = 0.5,         
+                  segment.color = 'grey50',
+                  min.segment.length = 0, 
+                  nudge_y = 0.05,   
+                  direction = "both") +
+  labs(title = "Male",
+       x = "",
+       y = "Natural Mortality",
+       fill = "Method") +
+  theme_few() +
+  scale_fill_viridis_d(option = "H") +
+  ylim(0, 2)
+
+```
+
+both plot
+
+```{r}
+ggarrange(m_female, m_male, 
+          common.legend = TRUE,
+          ncol=1,
+          legend="right")
+```
+Statistical diferences
+
+
 
 
 # References

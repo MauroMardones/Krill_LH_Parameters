@@ -1,8 +1,8 @@
 ---
-title: "Derive growth parameters and Natural Mortality in krill considering spatial heterogenity"
+title: "Derive growth parameters and natural mortality rates for krill while accounting for spatial heterogeneity in the Western Antarctic Peninsula."
 subtitle: "Working Paper to be submitted in a CCAMLR EMM-WG 2024"
-author: "Mardones, M; Cárdenas, C."
-date:  "16 May, 2024"
+author: "Mardones, M; Cárdenas, C., Krüger, L., Santa Cruz, F."
+date:  "19 May, 2024"
 bibliography: param.bib
 csl: apa.csl
 link-citations: yes
@@ -65,26 +65,13 @@ library(mixR)
 library(CCAMLRGIS)
 ```
 
-# Background
 
 # Methodology
-
-
-
-A important piece of information for a stock evaluation refers to the biological components such as average sizes and weights across areas and years. To do this, we will explore the biological data and prepare the output to add it into stock assessment integrate model [@Methot2013].
 
 The object `ohbio2` come from data exploration analysis in data request
 CCAMLR data. This objetc have bio information from krill.
 
 
-
-
-```r
-#cargo objeto
-meta <- get("METADATA")
-c1 <- get("C1")
-ohbio <- get("OBS_HAUL_BIOLOGY")
-```
 
 Join data set with master as `c1` set. This join is trought
 `obs_haul_id` variable to get geoposition variables
@@ -121,9 +108,6 @@ names(ohbio2)
 ## [45] "greenweight_kg"
 ```
 
-Firsts glance. Test how many register have by year. In this case,
-`length_total_cm` by season ccamlr. Same exercise in date period
-`date_catchperiod_start` to separate dates.
 
 
 ```r
@@ -132,18 +116,10 @@ ohbio3 <- ohbio2 %>%
          Month = month(date_catchperiod_start),
          Day = day(date_catchperiod_start)) %>% 
   #toupper() para convertir los valores a mayúsculas
-  mutate(sex_code = toupper(sex_code))
+  mutate(sex_code = toupper(sex_code)) %>% 
+  dplyr::select(7, 9, 11, 12, 14, 24, 25, 29, 42, 44, 46, 47, 43, 45) |>  
+  filter(asd_code=="481")
 ```
-
-Save data further analysis
-
-```r
-length481 <-ohbio3 %>% 
-  dplyr::select(7, 9, 11, 12, 14, 24, 25, 29, 42, 44, 46, 47, 43, 45) |>   filter(asd_code=="481")
-#save(length481, file = "length481.RData")
-```
-
-
 
 
 First thing is get different rater layer to join krill data length
@@ -168,21 +144,7 @@ Grouping bio data into stratas
 
 
 ```r
-names(length481)
-```
-
-```
-##  [1] "vessel_nationality_code" "season_ccamlr"          
-##  [3] "asd_code"                "trawl_technique"        
-##  [5] "date_catchperiod_start"  "latitude_set_end"       
-##  [7] "longitude_set_end"       "gear_type"              
-##  [9] "maturity_stage"          "length_total_cm"        
-## [11] "Year"                    "Month"                  
-## [13] "sex_code"                "greenweight_kg"
-```
-
-```r
-ohbio6 <- st_as_sf(length481 %>% 
+ohbio6 <- st_as_sf(ohbio3 %>% 
                      drop_na(latitude_set_end), 
                    coords = c("longitude_set_end", "latitude_set_end"),  
                   crs = "+proj=latlong +ellps=WGS84")
@@ -226,7 +188,6 @@ ssmap
 </div>
 
 
-
 Length composition by Strata CCAMLR to visualization first. First step is group data into to poligons strata.
 
 
@@ -244,6 +205,15 @@ Load RData
 sf4 <- readRDS("sf4.rds")
 ```
 
+Statistical difference
+
+
+```r
+m <- aov(length_total_cm ~ID, data=sf4)
+plot(TukeyHSD(m))
+```
+
+<img src="index_files/figure-html/unnamed-chunk-6-1.jpeg" style="display: block; margin: auto;" />
 
 
 ## Data
@@ -278,7 +248,7 @@ jzstrata <- ggplot(sf4 %>%
 jzstrata
 ```
 
-<img src="index_files/figure-html/unnamed-chunk-8-1.jpeg" style="display: block; margin: auto;" />
+<img src="index_files/figure-html/unnamed-chunk-7-1.jpeg" style="display: block; margin: auto;" />
 Now, must filter the DF
 
 
@@ -363,15 +333,15 @@ kbl(tabla_proporcion,
 
 ## Parameters estimation `k` and `L_inf_`
 
-### Method `ELEFAN` 
-
-(@Tobias2017)
 
 
 
 ```r
+#MALE
+
 sf5fil <- sf5 |>
-  filter(ID %in% c("BS", "EI", "GERLASHE", "SSIW")) |>  
+  filter(ID %in% c("BS", "EI", "GERLASHE", "SSIW"),
+         sex_code %in% "M") |>  
   mutate(date_catchperiod_start = as.Date(date_catchperiod_start)) |>  
   mutate(yearly_Group = floor_date(date_catchperiod_start, "year")) |>   # New column
   drop_na(length_total_cm) 
@@ -399,42 +369,133 @@ for (id in unique(sf5fil$ID)) {
 }
 ```
 
-<img src="index_files/figure-html/unnamed-chunk-11-1.jpeg" style="display: block; margin: auto;" /><img src="index_files/figure-html/unnamed-chunk-11-2.jpeg" style="display: block; margin: auto;" /><img src="index_files/figure-html/unnamed-chunk-11-3.jpeg" style="display: block; margin: auto;" /><img src="index_files/figure-html/unnamed-chunk-11-4.jpeg" style="display: block; margin: auto;" />
-Identified distribution
+<img src="index_files/figure-html/unnamed-chunk-10-1.jpeg" style="display: block; margin: auto;" /><img src="index_files/figure-html/unnamed-chunk-10-2.jpeg" style="display: block; margin: auto;" /><img src="index_files/figure-html/unnamed-chunk-10-3.jpeg" style="display: block; margin: auto;" /><img src="index_files/figure-html/unnamed-chunk-10-4.jpeg" style="display: block; margin: auto;" />
+
+```r
+#FEMALE
+
+sf5filhe <- sf5 |>
+  filter(ID %in% c("BS", "EI", "GERLASHE", "SSIW"),
+         sex_code %in% "F") |>  
+  mutate(date_catchperiod_start = as.Date(date_catchperiod_start)) |>  
+  mutate(yearly_Group = floor_date(date_catchperiod_start, "year")) |>   # New column
+  drop_na(length_total_cm) 
+
+# Definir los nombres correspondientes a cada objeto lfq_results
+nombres <- c("SSI", "BS", "GERLASHE", "EI")
+# Crear una lista para almacenar los resultados de cada ID
+lfq_resultshe <- list()
+# Iterar sobre cada ID
+for (id in unique(sf5filhe$ID)) {
+  # Obtener el nombre correspondiente
+  nombre <- nombres[which(unique(sf5filhe$ID) == id)]
+  # Filtrar los datos para el ID actual
+  df_idhe <- sf5filhe %>% filter(ID == id)
+  # Crear un objeto lfq para el ID actual
+  lfqhe <- lfqCreate(data = df_idhe,
+                   Lname = "length_total_cm",
+                   Dname = "yearly_Group",
+                   bin_size = 0.1)
+  # Agregar el resultado a la lista
+  lfq_resultshe[[id]] <- lfqhe
+  # Graficar el objeto lfq
+  plot(lfqhe, Fname = "catch",
+       main = nombre)
+}
+```
+
+<img src="index_files/figure-html/unnamed-chunk-10-5.jpeg" style="display: block; margin: auto;" /><img src="index_files/figure-html/unnamed-chunk-10-6.jpeg" style="display: block; margin: auto;" /><img src="index_files/figure-html/unnamed-chunk-10-7.jpeg" style="display: block; margin: auto;" /><img src="index_files/figure-html/unnamed-chunk-10-8.jpeg" style="display: block; margin: auto;" />
+
+Identified difference in length distribution just to male:
 
 
 ```r
-ei <- Bhattacharya(lfq_results$EI)
+Bhattacharya(lfq_results$EI)
 ```
 
 ```
 ## Interactive session needed for Bhattacharya.
 ```
 
+```
+## NULL
+```
+
+
+
 ```r
-ss <- Bhattacharya(lfq_results$SSIW)
+Bhattacharya(lfq_results$SSIW)
 ```
 
 ```
 ## Interactive session needed for Bhattacharya.
 ```
 
+```
+## NULL
+```
+
+
+
 ```r
-bs <- Bhattacharya(lfq_results$BS)
+Bhattacharya(lfq_results$BS)
 ```
 
 ```
 ## Interactive session needed for Bhattacharya.
 ```
 
+```
+## NULL
+```
+
+
+
 ```r
-gs <- Bhattacharya(lfq_results$GERLASHE)
+Bhattacharya(lfq_results$GERLASHE)
 ```
 
 ```
 ## Interactive session needed for Bhattacharya.
 ```
-ahora damos asignaciones a curvas para representación
+
+```
+## NULL
+```
+
+now we assign objet to male `lfq_result` and female `lfq_resulthe` and plot with `lfqRestructure()`
+
+
+Male
+
+
+```r
+# Definir los nombres correspondientes a cada objeto lfq_results
+nombres <- c("SSI", "BS", "GERLASHE", "EI")
+# Iterar sobre cada objeto lfq almacenado en lfq_results
+for (i in seq_along(lfq_results)) {
+  lfq <- lfq_results[[i]]
+  # Obtener el nombre correspondiente
+  nombre <- nombres[i]
+  # Restructurar el objeto lfq
+  lfqbin <- lfqRestructure(lfq, MA = 3, addl.sqrt = TRUE)
+  # Graficar el objeto lfq reestructurado
+  plot(lfqbin, hist.col = c("white", "black"),
+       image.col = c(rep(rgb(1,0.8,0.8),1000), "white", 
+                     rep(rgb(0.8,0.8,1),1000)),
+       ylim = c(0,max(lfqbin$midLengths+0.5)),
+       main = nombre)
+  # Ajustar curvas al objeto lfq reestructurado
+  tmp <- lfqFitCurves(lfqbin, par = list(Linf=6.5, 
+                                          K=0.45,
+                                          t_anchor=0.5),
+                      draw = TRUE, col=4, lty=2)
+}
+```
+
+<img src="index_files/figure-html/unnamed-chunk-15-1.jpeg" style="display: block; margin: auto;" /><img src="index_files/figure-html/unnamed-chunk-15-2.jpeg" style="display: block; margin: auto;" /><img src="index_files/figure-html/unnamed-chunk-15-3.jpeg" style="display: block; margin: auto;" /><img src="index_files/figure-html/unnamed-chunk-15-4.jpeg" style="display: block; margin: auto;" />
+
+Female
 
 
 ```r
@@ -444,85 +505,58 @@ ahora damos asignaciones a curvas para representación
 nombres <- c("SSI", "BS", "GERLASHE", "EI")
 
 # Iterar sobre cada objeto lfq almacenado en lfq_results
-for (i in seq_along(lfq_results)) {
-  lfq <- lfq_results[[i]]
+for (i in seq_along(lfq_resultshe)) {
+  lfqhe <- lfq_resultshe[[i]]
   
   # Obtener el nombre correspondiente
   nombre <- nombres[i]
   
   # Restructurar el objeto lfq
-  lfqbin <- lfqRestructure(lfq, MA = 3, addl.sqrt = TRUE)
+  lfqbinhe <- lfqRestructure(lfqhe, MA = 3, addl.sqrt = TRUE)
   
   # Graficar el objeto lfq reestructurado
-  plot(lfqbin, hist.col = c("white", "black"),
+  plot(lfqbinhe, hist.col = c("white", "black"),
        image.col = c(rep(rgb(1,0.8,0.8),1000), "white", 
                      rep(rgb(0.8,0.8,1),1000)),
-       ylim = c(0,max(lfqbin$midLengths+0.5)),
+       ylim = c(0,max(lfqbinhe$midLengths+0.5)),
        main = nombre)
   
   # Ajustar curvas al objeto lfq reestructurado
-  tmp <- lfqFitCurves(lfqbin, par = list(Linf=6.5, 
+  tmp <- lfqFitCurves(lfqbinhe, par = list(Linf=6.5, 
                                           K=0.45,
                                           t_anchor=0.5),
                       draw = TRUE, col=4, lty=2)
 }
 ```
 
-<img src="index_files/figure-html/unnamed-chunk-13-1.jpeg" style="display: block; margin: auto;" /><img src="index_files/figure-html/unnamed-chunk-13-2.jpeg" style="display: block; margin: auto;" /><img src="index_files/figure-html/unnamed-chunk-13-3.jpeg" style="display: block; margin: auto;" /><img src="index_files/figure-html/unnamed-chunk-13-4.jpeg" style="display: block; margin: auto;" />
+<img src="index_files/figure-html/unnamed-chunk-16-1.jpeg" style="display: block; margin: auto;" /><img src="index_files/figure-html/unnamed-chunk-16-2.jpeg" style="display: block; margin: auto;" /><img src="index_files/figure-html/unnamed-chunk-16-3.jpeg" style="display: block; margin: auto;" /><img src="index_files/figure-html/unnamed-chunk-16-4.jpeg" style="display: block; margin: auto;" />
+### Modal Progression analysis with `ELEFAN` to estimated `Linf`and `K`
 
+Method based on @Pauly1987 and @Mildenberger2017
 
-
-Proceed to fit Modal Progression analysis with `ELEFAN`
-
-#### Parameters to `SSIW`
-
-
-```r
-# Response surface analyss
-res_RSAsswi <- ELEFAN(lfq = lfq_results$SSIW,  
-                  MA = 5,
-                  Linf_range = seq(4.5, 7, 
-                                   length.out = 30),
-                  K_range = exp(seq(log(0.1),
-                                    log(2),
-                                    length.out = 30)),
-                  C = 0.5,
-                  ts = 0.5,
-                  method = "cross",
-                  cross.date = lfq_results$SSIW$dates[3],
-                  cross.midLength = lfq_results$SSIW$midLengths[5],
-                  contour = TRUE,
-                  add.values = FALSE,
-                  agemax = 5,
-                  hide.progressbar = TRUE)
-```
-
-```
-## Optimisation procuedure of ELEFAN is running. 
-## This will take some time. 
-## The process bar will inform you about the process of the calculations.
-```
-
+#### Krill Male
 
 
 ```r
+#### Parameters to `SSWI`
+
 # run ELEFAN with simulated annealing
 res_SAsswi <- ELEFAN_SA(lfq_results$SSIW, 
                     SA_time = 60*0.5, 
                     MA = 5, 
                     agemax = 5,
                     seasonalised = TRUE, addl.sqrt = TRUE,
-                    init_par = list(Linf = 4.5, 
+                    init_par = list(Linf = 6, 
                                     K = 0.5, 
                                     t_anchor = 0.5,
                                     C=0.5, 
                                     ts = 0.5),
-                    low_par = list(Linf = 4,
+                    low_par = list(Linf = 5,
                                    K = 0.01,
                                    t_anchor = 0, 
                                    C = 0, 
                                    ts = 0),
-                    up_par = list(Linf = 6.5,
+                    up_par = list(Linf = 7.5,
                                   K = 1, 
                                   t_anchor = 1,
                                   C = 1, ts = 1))
@@ -531,15 +565,13 @@ res_SAsswi <- ELEFAN_SA(lfq_results$SSIW,
 ```
 ## Simulated annealing is running. 
 ## This will take approximately 0.5 minutes.
-## timeSpan = 30.005021 maxTime = 30
-## Emini is: -0.2844106025
+## timeSpan = 30.012484 maxTime = 30
+## Emini is: -0.2570441366
 ## xmini are:
-## 5.324971939 0.912516579 0.6134328698 0.09638525543 0.3336850045 
-## Totally it used 30.005036 secs
-## No. of function call is: 1649
+## 6.418895303 0.7678352515 0.5033732662 0.490536049 0.8187059425 
+## Totally it used 30.012503 secs
+## No. of function call is: 1116
 ```
-
-
 
 ```r
 # run ELEFAN with genetic algorithm
@@ -549,12 +581,12 @@ res_GAsswi <- ELEFAN_GA(lfq_results$SSIW,
                     maxiter = 10, 
                     agemax = 5,
                     addl.sqrt = TRUE,
-                    low_par = list(Linf = 4.5, 
-                                   K = 0.01, 
+                     low_par = list(Linf = 5,
+                                   K = 0.5,
                                    t_anchor = 0, 
                                    C = 0, 
                                    ts = 0),
-                    up_par = list(Linf = 6.5, 
+                    up_par = list(Linf = 7.5,
                                   K = 1, 
                                   t_anchor = 1,
                                   C = 1, ts = 1),
@@ -565,119 +597,28 @@ res_GAsswi <- ELEFAN_GA(lfq_results$SSIW,
 ## Genetic algorithm is running. This might take some time.
 ```
 
-<img src="index_files/figure-html/unnamed-chunk-16-1.jpeg" style="display: block; margin: auto;" />
-
-Table with different method
-
+<img src="index_files/figure-html/unnamed-chunk-17-1.jpeg" style="display: block; margin: auto;" />
 
 ```r
-# show results
-RSAsswi <- unlist(res_RSAsswi$par)
-GAsswi <- unlist(res_GAsswi$par)
-SAsswi <- unlist(res_SAsswi$par)
-parsswi <- round(rbind(RSAsswi, GAsswi, SAsswi),3)
-
-parsswi %>%
-  kbl(booktabs = T,
-      position="ht!",
-    caption = "Parametres LH to SSWI") %>%
-    kable_styling(latex_options = c("striped",
-                                  "condensed"),
-                full_width = FALSE)
-```
-
-<table class="table" style="color: black; width: auto !important; margin-left: auto; margin-right: auto;">
-<caption>Parametres LH to SSWI</caption>
- <thead>
-  <tr>
-   <th style="text-align:left;">   </th>
-   <th style="text-align:right;"> Linf </th>
-   <th style="text-align:right;"> K </th>
-   <th style="text-align:right;"> t_anchor </th>
-   <th style="text-align:right;"> C </th>
-   <th style="text-align:right;"> ts </th>
-   <th style="text-align:right;"> phiL </th>
-  </tr>
- </thead>
-<tbody>
-  <tr>
-   <td style="text-align:left;"> RSAsswi </td>
-   <td style="text-align:right;"> 5.448 </td>
-   <td style="text-align:right;"> 0.640 </td>
-   <td style="text-align:right;"> 0.790 </td>
-   <td style="text-align:right;"> 0.500 </td>
-   <td style="text-align:right;"> 0.500 </td>
-   <td style="text-align:right;"> 1.279 </td>
-  </tr>
-  <tr>
-   <td style="text-align:left;"> GAsswi </td>
-   <td style="text-align:right;"> 5.989 </td>
-   <td style="text-align:right;"> 0.579 </td>
-   <td style="text-align:right;"> 0.532 </td>
-   <td style="text-align:right;"> 0.859 </td>
-   <td style="text-align:right;"> 0.880 </td>
-   <td style="text-align:right;"> 1.318 </td>
-  </tr>
-  <tr>
-   <td style="text-align:left;"> SAsswi </td>
-   <td style="text-align:right;"> 5.325 </td>
-   <td style="text-align:right;"> 0.913 </td>
-   <td style="text-align:right;"> 0.613 </td>
-   <td style="text-align:right;"> 0.096 </td>
-   <td style="text-align:right;"> 0.334 </td>
-   <td style="text-align:right;"> 1.413 </td>
-  </tr>
-</tbody>
-</table>
 #### Parameters to `EI`
 
-
-```r
-# Response surface analyss
-res_RSAei <- ELEFAN(lfq = lfq_results$EI,  
-                  MA = 5,
-                  Linf_range = seq(4.5, 7, 
-                                   length.out = 30),
-                  K_range = exp(seq(log(0.1),
-                                    log(2),
-                                    length.out = 30)),
-                  C = 0.5,
-                  ts = 0.5,
-                  method = "cross",
-                  cross.date = lfq_results$EI$dates[3],
-                  cross.midLength = lfq_results$EI$midLengths[5],
-                  contour = TRUE,
-                  add.values = FALSE,
-                  agemax = 5,
-                  hide.progressbar = TRUE)
-```
-
-```
-## Optimisation procuedure of ELEFAN is running. 
-## This will take some time. 
-## The process bar will inform you about the process of the calculations.
-```
-
-
-
-```r
 # run ELEFAN with simulated annealing
 res_SAei <- ELEFAN_SA(lfq_results$EI, 
                     SA_time = 60*0.5, 
                     MA = 5, 
                     agemax = 5,
                     seasonalised = TRUE, addl.sqrt = TRUE,
-                    init_par = list(Linf = 4.5, 
+                    init_par = list(Linf = 6, 
                                     K = 0.5, 
                                     t_anchor = 0.5,
                                     C=0.5, 
                                     ts = 0.5),
-                    low_par = list(Linf = 4,
+                    low_par = list(Linf = 5,
                                    K = 0.01,
                                    t_anchor = 0, 
                                    C = 0, 
                                    ts = 0),
-                    up_par = list(Linf = 6.5,
+                    up_par = list(Linf = 7.5,
                                   K = 1, 
                                   t_anchor = 1,
                                   C = 1, ts = 1))
@@ -686,15 +627,13 @@ res_SAei <- ELEFAN_SA(lfq_results$EI,
 ```
 ## Simulated annealing is running. 
 ## This will take approximately 0.5 minutes.
-## timeSpan = 30.001442 maxTime = 30
-## Emini is: -0.2111109108
+## timeSpan = 30.008584 maxTime = 30
+## Emini is: -0.2367092272
 ## xmini are:
-## 5.863710068 0.9813904597 0.873453021 0.9993372839 0.5819024704 
-## Totally it used 30.001453 secs
-## No. of function call is: 2048
+## 7.314306291 0.9412915653 0.6182883382 0.7314349413 0.4690019973 
+## Totally it used 30.008602 secs
+## No. of function call is: 1333
 ```
-
-
 
 ```r
 # run ELEFAN with genetic algorithm
@@ -704,12 +643,12 @@ res_GAei <- ELEFAN_GA(lfq_results$EI,
                     maxiter = 10, 
                     agemax = 5,
                     addl.sqrt = TRUE,
-                    low_par = list(Linf = 4.5, 
-                                   K = 0.01, 
+                     low_par = list(Linf = 5,
+                                   K = 0.5,
                                    t_anchor = 0, 
                                    C = 0, 
                                    ts = 0),
-                    up_par = list(Linf = 6.5, 
+                    up_par = list(Linf = 7.5,
                                   K = 1, 
                                   t_anchor = 1,
                                   C = 1, ts = 1),
@@ -720,68 +659,28 @@ res_GAei <- ELEFAN_GA(lfq_results$EI,
 ## Genetic algorithm is running. This might take some time.
 ```
 
-<img src="index_files/figure-html/unnamed-chunk-20-1.jpeg" style="display: block; margin: auto;" />
-
+<img src="index_files/figure-html/unnamed-chunk-17-2.jpeg" style="display: block; margin: auto;" />
 
 ```r
-# show results
-RSAei <- unlist(res_RSAei$par)
-GAei <- unlist(res_GAei$par)
-SAei <- unlist(res_SAei$par)
-parei <- round(rbind(RSAei, GAei, SAei),3)
-```
-
-
-
 #### Parameters to `BS`
 
-
-```r
-# Response surface analyss
-res_RSAbs <- ELEFAN(lfq = lfq_results$BS,  
-                  MA = 5,
-                  Linf_range = seq(4.5, 7, 
-                                   length.out = 30),
-                  K_range = exp(seq(log(0.1),
-                                    log(2),
-                                    length.out = 30)),
-                  C = 0.5,
-                  ts = 0.5,
-                  method = "cross",
-                  cross.date = lfq_results$BS$dates[3],
-                  cross.midLength = lfq_results$BS$midLengths[5],
-                  contour = TRUE,
-                  add.values = FALSE,
-                  agemax = 5,
-                  hide.progressbar = TRUE)
-```
-
-```
-## Optimisation procuedure of ELEFAN is running. 
-## This will take some time. 
-## The process bar will inform you about the process of the calculations.
-```
-
-
-
-```r
 # run ELEFAN with simulated annealing
 res_SAbs <- ELEFAN_SA(lfq_results$BS, 
                     SA_time = 60*0.5, 
                     MA = 5, 
                     agemax = 5,
                     seasonalised = TRUE, addl.sqrt = TRUE,
-                    init_par = list(Linf = 4.5, 
+                   init_par = list(Linf = 6, 
                                     K = 0.5, 
                                     t_anchor = 0.5,
                                     C=0.5, 
                                     ts = 0.5),
-                    low_par = list(Linf = 4,
+                    low_par = list(Linf = 5,
                                    K = 0.01,
                                    t_anchor = 0, 
                                    C = 0, 
                                    ts = 0),
-                    up_par = list(Linf = 6.5,
+                    up_par = list(Linf = 7.5,
                                   K = 1, 
                                   t_anchor = 1,
                                   C = 1, ts = 1))
@@ -790,15 +689,13 @@ res_SAbs <- ELEFAN_SA(lfq_results$BS,
 ```
 ## Simulated annealing is running. 
 ## This will take approximately 0.5 minutes.
-## timeSpan = 30.00739 maxTime = 30
-## Emini is: -0.3184663901
+## timeSpan = 30.001463 maxTime = 30
+## Emini is: -0.3182638225
 ## xmini are:
-## 5.310221989 0.8441457965 0.2786562045 0.3598986657 0.9663543715 
-## Totally it used 30.007403 secs
-## No. of function call is: 1829
+## 5.593892905 0.604283656 0.1065582037 0.643085584 0.9565868378 
+## Totally it used 30.001483 secs
+## No. of function call is: 1233
 ```
-
-
 
 ```r
 # run ELEFAN with genetic algorithm
@@ -808,12 +705,12 @@ res_GAbs <- ELEFAN_GA(lfq_results$BS,
                     maxiter = 10, 
                     agemax = 5,
                     addl.sqrt = TRUE,
-                    low_par = list(Linf = 4.5, 
-                                   K = 0.01, 
+                    low_par = list(Linf = 5,
+                                   K = 0.01,
                                    t_anchor = 0, 
                                    C = 0, 
                                    ts = 0),
-                    up_par = list(Linf = 6.5, 
+                    up_par = list(Linf = 7.5,
                                   K = 1, 
                                   t_anchor = 1,
                                   C = 1, ts = 1),
@@ -824,66 +721,28 @@ res_GAbs <- ELEFAN_GA(lfq_results$BS,
 ## Genetic algorithm is running. This might take some time.
 ```
 
-<img src="index_files/figure-html/unnamed-chunk-24-1.jpeg" style="display: block; margin: auto;" />
-
+<img src="index_files/figure-html/unnamed-chunk-17-3.jpeg" style="display: block; margin: auto;" />
 
 ```r
-# show results
-RSAbs <- unlist(res_RSAbs$par)
-GAbs <- unlist(res_GAbs$par)
-SAbs <- unlist(res_SAbs$par)
-parbs <- round(rbind(RSAbs, GAbs, SAbs),3)
-```
-
 #### Parameters to `GERLASHE`
 
-
-```r
-# Response surface analyss
-res_RSAgs <- ELEFAN(lfq = lfq_results$GERLASHE,  
-                  MA = 5,
-                  Linf_range = seq(4.5, 7, 
-                                   length.out = 30),
-                  K_range = exp(seq(log(0.1),
-                                    log(2),
-                                    length.out = 30)),
-                  C = 0.5,
-                  ts = 0.5,
-                  method = "cross",
-                  cross.date = lfq_results$GERLASHE$dates[3],
-                  cross.midLength = lfq_results$GERLASHE$midLengths[5],
-                  contour = TRUE,
-                  add.values = FALSE,
-                  agemax = 5,
-                  hide.progressbar = TRUE)
-```
-
-```
-## Optimisation procuedure of ELEFAN is running. 
-## This will take some time. 
-## The process bar will inform you about the process of the calculations.
-```
-
-
-
-```r
 # run ELEFAN with simulated annealing
 res_SAgs <- ELEFAN_SA(lfq_results$GERLASHE, 
                     SA_time = 60*0.5, 
                     MA = 5, 
                     agemax = 5,
                     seasonalised = TRUE, addl.sqrt = TRUE,
-                    init_par = list(Linf = 4.5, 
+                    init_par = list(Linf = 6, 
                                     K = 0.5, 
                                     t_anchor = 0.5,
                                     C=0.5, 
                                     ts = 0.5),
-                    low_par = list(Linf = 4,
+                    low_par = list(Linf = 5,
                                    K = 0.01,
                                    t_anchor = 0, 
                                    C = 0, 
                                    ts = 0),
-                    up_par = list(Linf = 6.5,
+                    up_par = list(Linf = 7.5,
                                   K = 1, 
                                   t_anchor = 1,
                                   C = 1, ts = 1))
@@ -892,15 +751,13 @@ res_SAgs <- ELEFAN_SA(lfq_results$GERLASHE,
 ```
 ## Simulated annealing is running. 
 ## This will take approximately 0.5 minutes.
-## timeSpan = 30.004488 maxTime = 30
-## Emini is: -0.3892859855
+## timeSpan = 30.004772 maxTime = 30
+## Emini is: -0.2869010907
 ## xmini are:
-## 5.28623276 0.9116002417 0.3847553197 0.06077500898 0.3120612055 
-## Totally it used 30.0045 secs
-## No. of function call is: 2521
+## 5.789427124 0.7127949446 0.4013525844 0.5469309241 0.1102455743 
+## Totally it used 30.00479 secs
+## No. of function call is: 1696
 ```
-
-
 
 ```r
 # run ELEFAN with genetic algorithm
@@ -910,12 +767,12 @@ res_GAgs <- ELEFAN_GA(lfq_results$GERLASHE,
                     maxiter = 10, 
                     agemax = 5,
                     addl.sqrt = TRUE,
-                    low_par = list(Linf = 4.5, 
-                                   K = 0.01, 
+                    low_par = list(Linf = 5,
+                                   K = 0.01,
                                    t_anchor = 0, 
                                    C = 0, 
                                    ts = 0),
-                    up_par = list(Linf = 6.5, 
+                    up_par = list(Linf = 7.5,
                                   K = 1, 
                                   t_anchor = 1,
                                   C = 1, ts = 1),
@@ -926,154 +783,515 @@ res_GAgs <- ELEFAN_GA(lfq_results$GERLASHE,
 ## Genetic algorithm is running. This might take some time.
 ```
 
-<img src="index_files/figure-html/unnamed-chunk-28-1.jpeg" style="display: block; margin: auto;" />
+<img src="index_files/figure-html/unnamed-chunk-17-4.jpeg" style="display: block; margin: auto;" />
+#### Krill Female
+
 
 
 ```r
-# show results
-RSAgs <- unlist(res_RSAgs$par)
+#### Parameters to `SSWI`
+
+# run ELEFAN with simulated annealing
+res_SAsswihe <- ELEFAN_SA(lfq_resultshe$SSIW, 
+                    SA_time = 60*0.5, 
+                    MA = 5, 
+                    agemax = 5,
+                    seasonalised = TRUE, addl.sqrt = TRUE,
+                    init_par = list(Linf = 6, 
+                                    K = 0.5, 
+                                    t_anchor = 0.5,
+                                    C=0.5, 
+                                    ts = 0.5),
+                    low_par = list(Linf = 5,
+                                   K = 0.01,
+                                   t_anchor = 0, 
+                                   C = 0, 
+                                   ts = 0),
+                    up_par = list(Linf = 7.5,
+                                  K = 1, 
+                                  t_anchor = 1,
+                                  C = 1, ts = 1))
+```
+
+```
+## Simulated annealing is running. 
+## This will take approximately 0.5 minutes.
+## timeSpan = 30.008171 maxTime = 30
+## Emini is: -0.2316358367
+## xmini are:
+## 6.003211424 0.6594774183 0.1511300988 0.1896827698 0.9636289105 
+## Totally it used 30.00819 secs
+## No. of function call is: 1176
+```
+
+```r
+# run ELEFAN with genetic algorithm
+res_GAsswihe <- ELEFAN_GA(lfq_resultshe$SSIW, 
+                    MA = 5, 
+                    seasonalised = TRUE, 
+                    maxiter = 10, 
+                    agemax = 5,
+                    addl.sqrt = TRUE,
+                     low_par = list(Linf = 5,
+                                   K = 0.01,
+                                   t_anchor = 0, 
+                                   C = 0, 
+                                   ts = 0),
+                    up_par = list(Linf = 7.5,
+                                  K = 1, 
+                                  t_anchor = 1,
+                                  C = 1, ts = 1),
+                    monitor = FALSE)
+```
+
+```
+## Genetic algorithm is running. This might take some time.
+```
+
+<img src="index_files/figure-html/unnamed-chunk-18-1.jpeg" style="display: block; margin: auto;" />
+
+```r
+#### Parameters to `EI`
+
+# run ELEFAN with simulated annealing
+res_SAeihe <- ELEFAN_SA(lfq_resultshe$EI, 
+                    SA_time = 60*0.5, 
+                    MA = 5, 
+                    agemax = 5,
+                    seasonalised = TRUE, addl.sqrt = TRUE,
+                    init_par = list(Linf = 6, 
+                                    K = 0.5, 
+                                    t_anchor = 0.5,
+                                    C=0.5, 
+                                    ts = 0.5),
+                    low_par = list(Linf = 5,
+                                   K = 0.01,
+                                   t_anchor = 0, 
+                                   C = 0, 
+                                   ts = 0),
+                    up_par = list(Linf = 7.5,
+                                  K = 1, 
+                                  t_anchor = 1,
+                                  C = 1, ts = 1))
+```
+
+```
+## Simulated annealing is running. 
+## This will take approximately 0.5 minutes.
+## timeSpan = 30.020357 maxTime = 30
+## Emini is: -0.2964366709
+## xmini are:
+## 5.585338324 0.9580215203 0.2021615843 0.7399474084 0.666007027 
+## Totally it used 30.020379 secs
+## No. of function call is: 1319
+```
+
+```r
+# run ELEFAN with genetic algorithm
+res_GAeihe <- ELEFAN_GA(lfq_resultshe$EI, 
+                    MA = 5, 
+                    seasonalised = TRUE, 
+                    maxiter = 10, 
+                    agemax = 5,
+                    addl.sqrt = TRUE,
+                     low_par = list(Linf = 5,
+                                   K = 0.01,
+                                   t_anchor = 0, 
+                                   C = 0, 
+                                   ts = 0),
+                    up_par = list(Linf = 7.5,
+                                  K = 1, 
+                                  t_anchor = 1,
+                                  C = 1, ts = 1),
+                    monitor = FALSE)
+```
+
+```
+## Genetic algorithm is running. This might take some time.
+```
+
+<img src="index_files/figure-html/unnamed-chunk-18-2.jpeg" style="display: block; margin: auto;" />
+
+```r
+#### Parameters to `BS`
+
+
+# run ELEFAN with simulated annealing
+res_SAbshe <- ELEFAN_SA(lfq_resultshe$BS, 
+                    SA_time = 60*0.5, 
+                    MA = 5, 
+                    agemax = 5,
+                    seasonalised = TRUE, addl.sqrt = TRUE,
+                   init_par = list(Linf = 6, 
+                                    K = 0.5, 
+                                    t_anchor = 0.5,
+                                    C=0.5, 
+                                    ts = 0.5),
+                    low_par = list(Linf = 5,
+                                   K = 0.01,
+                                   t_anchor = 0, 
+                                   C = 0, 
+                                   ts = 0),
+                    up_par = list(Linf = 7.5,
+                                  K = 1, 
+                                  t_anchor = 1,
+                                  C = 1, ts = 1))
+```
+
+```
+## Simulated annealing is running. 
+## This will take approximately 0.5 minutes.
+## timeSpan = 30.016515 maxTime = 30
+## Emini is: -0.4349139705
+## xmini are:
+## 5.923948187 0.8310357623 0.5259462683 0.3320332617 0.281676233 
+## Totally it used 30.016542 secs
+## No. of function call is: 1183
+```
+
+```r
+# run ELEFAN with genetic algorithm
+res_GAbshe <- ELEFAN_GA(lfq_resultshe$BS, 
+                    MA = 5, 
+                    seasonalised = TRUE, 
+                    maxiter = 10, 
+                    agemax = 5,
+                    addl.sqrt = TRUE,
+                    low_par = list(Linf = 5,
+                                   K = 0.01,
+                                   t_anchor = 0, 
+                                   C = 0, 
+                                   ts = 0),
+                    up_par = list(Linf = 7.5,
+                                  K = 1, 
+                                  t_anchor = 1,
+                                  C = 1, ts = 1),
+                    monitor = FALSE)
+```
+
+```
+## Genetic algorithm is running. This might take some time.
+```
+
+<img src="index_files/figure-html/unnamed-chunk-18-3.jpeg" style="display: block; margin: auto;" />
+
+```r
+#### Parameters to `GERLASHE`
+
+
+# run ELEFAN with simulated annealing
+res_SAgshe <- ELEFAN_SA(lfq_resultshe$GERLASHE, 
+                    SA_time = 60*0.5, 
+                    MA = 5, 
+                    agemax = 5,
+                    seasonalised = TRUE, addl.sqrt = TRUE,
+                    init_par = list(Linf = 6, 
+                                    K = 0.5, 
+                                    t_anchor = 0.5,
+                                    C=0.5, 
+                                    ts = 0.5),
+                    low_par = list(Linf = 5,
+                                   K = 0.01,
+                                   t_anchor = 0, 
+                                   C = 0, 
+                                   ts = 0),
+                    up_par = list(Linf = 7.5,
+                                  K = 1, 
+                                  t_anchor = 1,
+                                  C = 1, ts = 1))
+```
+
+```
+## Simulated annealing is running. 
+## This will take approximately 0.5 minutes.
+## timeSpan = 30.0125 maxTime = 30
+## Emini is: -0.3825402709
+## xmini are:
+## 5.659959408 0.9045192397 0.9905485124 0.03362630308 0.549246957 
+## Totally it used 30.012521 secs
+## No. of function call is: 1570
+```
+
+```r
+# run ELEFAN with genetic algorithm
+res_GAgshe <- ELEFAN_GA(lfq_resultshe$GERLASHE, 
+                    MA = 5, 
+                    seasonalised = TRUE, 
+                    maxiter = 10, 
+                    agemax = 5,
+                    addl.sqrt = TRUE,
+                    low_par = list(Linf = 5,
+                                   K = 0.01,
+                                   t_anchor = 0, 
+                                   C = 0, 
+                                   ts = 0),
+                    up_par = list(Linf = 7.5,
+                                  K = 1, 
+                                  t_anchor = 1,
+                                  C = 1, ts = 1),
+                    monitor = FALSE)
+```
+
+```
+## Genetic algorithm is running. This might take some time.
+```
+
+<img src="index_files/figure-html/unnamed-chunk-18-4.jpeg" style="display: block; margin: auto;" />
+
+Resuming parameters to both sex  by strata to krill
+
+```r
+#male
+GAbs <- unlist(res_GAbs$par)
+SAbs <- unlist(res_SAbs$par)
+GAei <- unlist(res_GAei$par)
+SAei <- unlist(res_SAei$par)
+GAsswi <- unlist(res_GAsswi$par)
+SAsswi <- unlist(res_SAsswi$par)
 GAgs <- unlist(res_GAgs$par)
 SAgs <- unlist(res_SAgs$par)
-pargs <- round(rbind(RSAgs, GAgs, SAgs),3)
+#female
+GAbshe <- unlist(res_GAbshe$par)
+SAbshe <- unlist(res_SAbshe$par)
+GAeihe <- unlist(res_GAeihe$par)
+SAeihe <- unlist(res_SAeihe$par)
+GAsswihe <- unlist(res_GAsswihe$par)
+SAsswihe <- unlist(res_SAsswihe$par)
+GAgshe <- unlist(res_GAgshe$par)
+SAgshe <- unlist(res_SAgshe$par)
+# join 
+t_k_linf_m <- rbind(GAbs[1:2],
+                  SAbs[1:2],
+                  GAei[1:2],
+                  SAei[1:2],
+                  GAsswi[1:2],
+                  SAsswi[1:2],
+                  GAgs[1:2],
+                  SAgs[1:2])
+t_k_linf_f <- rbind(GAbshe[1:2],
+                  SAbshe[1:2],
+                  GAeihe[1:2],
+                  SAeihe[1:2],
+                  GAsswihe[1:2],
+                  SAsswihe[1:2],
+                  GAgshe[1:2],
+                  SAgshe[1:2])
+row_names <- c("GA BS", "SA BS", "GA EI", 
+                 "SA EI", "GA SSWI", "SA SSWI",
+                 "GA GS", "SA GS")
+rownames(t_k_linf_m) <- row_names
+rownames(t_k_linf_f) <- row_names
+col_names_m <- c("L inf Male", "K Male")
+col_names_f <- c("L inf Female", "K Female")
+colnames(t_k_linf_m) <- col_names_m
+colnames(t_k_linf_f) <- col_names_f
+
+
+total_para <- round(cbind(t_k_linf_f,
+                    t_k_linf_m),3)
+t_k_linf_total <- as_tibble(total_para, rownames = "group")
+
+
+means <- t_k_linf_total %>%
+  summarise(across(where(is.numeric), ~ mean(.x, na.rm = TRUE))) %>%
+  mutate(group = "Mean")
+
+t_k_linf <- bind_rows(t_k_linf_total, means)
 ```
+
+
+```r
+write_csv(t_k_linf, "parametros_krill.csv")
+```
+
+
 total Table with `L_inf_` and `K`
 
 
 ```r
-t_k_linf <- rbind(parsswi, parei, parbs, pargs)
 t_k_linf %>%
+  separate(group, into = c("METHOD", "STRATA"), sep = " ") %>% 
   kbl(booktabs = T,
       position="ht!",
-    caption = "Parametres LH in different strata with 3 types of algoritms") %>%
+    caption = "Parametres LH in different strata with 2 algoritms to estimation") %>%
   kable_styling(latex_options = c("striped",
                                   "condensed"),
                 full_width = FALSE)
 ```
 
 <table class="table" style="color: black; width: auto !important; margin-left: auto; margin-right: auto;">
-<caption>Parametres LH in different strata with 3 types of algoritms</caption>
+<caption>Parametres LH in different strata with 2 algoritms to estimation</caption>
  <thead>
   <tr>
-   <th style="text-align:left;">   </th>
-   <th style="text-align:right;"> Linf </th>
-   <th style="text-align:right;"> K </th>
-   <th style="text-align:right;"> t_anchor </th>
-   <th style="text-align:right;"> C </th>
-   <th style="text-align:right;"> ts </th>
-   <th style="text-align:right;"> phiL </th>
+   <th style="text-align:left;"> METHOD </th>
+   <th style="text-align:left;"> STRATA </th>
+   <th style="text-align:right;"> L inf Female </th>
+   <th style="text-align:right;"> K Female </th>
+   <th style="text-align:right;"> L inf Male </th>
+   <th style="text-align:right;"> K Male </th>
   </tr>
  </thead>
 <tbody>
   <tr>
-   <td style="text-align:left;"> RSAsswi </td>
-   <td style="text-align:right;"> 5.448 </td>
-   <td style="text-align:right;"> 0.640 </td>
-   <td style="text-align:right;"> 0.790 </td>
-   <td style="text-align:right;"> 0.500 </td>
-   <td style="text-align:right;"> 0.500 </td>
-   <td style="text-align:right;"> 1.279 </td>
+   <td style="text-align:left;"> GA </td>
+   <td style="text-align:left;"> BS </td>
+   <td style="text-align:right;"> 6.058000 </td>
+   <td style="text-align:right;"> 0.6740 </td>
+   <td style="text-align:right;"> 6.018000 </td>
+   <td style="text-align:right;"> 0.726000 </td>
   </tr>
   <tr>
-   <td style="text-align:left;"> GAsswi </td>
-   <td style="text-align:right;"> 5.989 </td>
-   <td style="text-align:right;"> 0.579 </td>
-   <td style="text-align:right;"> 0.532 </td>
-   <td style="text-align:right;"> 0.859 </td>
-   <td style="text-align:right;"> 0.880 </td>
-   <td style="text-align:right;"> 1.318 </td>
+   <td style="text-align:left;"> SA </td>
+   <td style="text-align:left;"> BS </td>
+   <td style="text-align:right;"> 5.924000 </td>
+   <td style="text-align:right;"> 0.8310 </td>
+   <td style="text-align:right;"> 5.594000 </td>
+   <td style="text-align:right;"> 0.604000 </td>
   </tr>
   <tr>
-   <td style="text-align:left;"> SAsswi </td>
-   <td style="text-align:right;"> 5.325 </td>
-   <td style="text-align:right;"> 0.913 </td>
-   <td style="text-align:right;"> 0.613 </td>
-   <td style="text-align:right;"> 0.096 </td>
-   <td style="text-align:right;"> 0.334 </td>
-   <td style="text-align:right;"> 1.413 </td>
+   <td style="text-align:left;"> GA </td>
+   <td style="text-align:left;"> EI </td>
+   <td style="text-align:right;"> 6.675000 </td>
+   <td style="text-align:right;"> 0.5570 </td>
+   <td style="text-align:right;"> 6.865000 </td>
+   <td style="text-align:right;"> 0.834000 </td>
   </tr>
   <tr>
-   <td style="text-align:left;"> RSAei </td>
-   <td style="text-align:right;"> 5.879 </td>
-   <td style="text-align:right;"> 0.470 </td>
-   <td style="text-align:right;"> 0.750 </td>
-   <td style="text-align:right;"> 0.500 </td>
-   <td style="text-align:right;"> 0.500 </td>
-   <td style="text-align:right;"> 1.211 </td>
+   <td style="text-align:left;"> SA </td>
+   <td style="text-align:left;"> EI </td>
+   <td style="text-align:right;"> 5.585000 </td>
+   <td style="text-align:right;"> 0.9580 </td>
+   <td style="text-align:right;"> 7.314000 </td>
+   <td style="text-align:right;"> 0.941000 </td>
   </tr>
   <tr>
-   <td style="text-align:left;"> GAei </td>
-   <td style="text-align:right;"> 5.301 </td>
-   <td style="text-align:right;"> 0.891 </td>
-   <td style="text-align:right;"> 0.435 </td>
-   <td style="text-align:right;"> 0.359 </td>
-   <td style="text-align:right;"> 0.570 </td>
-   <td style="text-align:right;"> 1.399 </td>
+   <td style="text-align:left;"> GA </td>
+   <td style="text-align:left;"> SSWI </td>
+   <td style="text-align:right;"> 6.487000 </td>
+   <td style="text-align:right;"> 0.7600 </td>
+   <td style="text-align:right;"> 5.739000 </td>
+   <td style="text-align:right;"> 0.718000 </td>
   </tr>
   <tr>
-   <td style="text-align:left;"> SAei </td>
-   <td style="text-align:right;"> 5.864 </td>
-   <td style="text-align:right;"> 0.981 </td>
-   <td style="text-align:right;"> 0.873 </td>
-   <td style="text-align:right;"> 0.999 </td>
-   <td style="text-align:right;"> 0.582 </td>
-   <td style="text-align:right;"> 1.528 </td>
+   <td style="text-align:left;"> SA </td>
+   <td style="text-align:left;"> SSWI </td>
+   <td style="text-align:right;"> 6.003000 </td>
+   <td style="text-align:right;"> 0.6590 </td>
+   <td style="text-align:right;"> 6.419000 </td>
+   <td style="text-align:right;"> 0.768000 </td>
   </tr>
   <tr>
-   <td style="text-align:left;"> RSAbs </td>
-   <td style="text-align:right;"> 5.448 </td>
-   <td style="text-align:right;"> 0.640 </td>
-   <td style="text-align:right;"> 0.790 </td>
-   <td style="text-align:right;"> 0.500 </td>
-   <td style="text-align:right;"> 0.500 </td>
-   <td style="text-align:right;"> 1.279 </td>
+   <td style="text-align:left;"> GA </td>
+   <td style="text-align:left;"> GS </td>
+   <td style="text-align:right;"> 6.009000 </td>
+   <td style="text-align:right;"> 0.6840 </td>
+   <td style="text-align:right;"> 6.719000 </td>
+   <td style="text-align:right;"> 0.355000 </td>
   </tr>
   <tr>
-   <td style="text-align:left;"> GAbs </td>
-   <td style="text-align:right;"> 6.032 </td>
-   <td style="text-align:right;"> 0.673 </td>
-   <td style="text-align:right;"> 0.420 </td>
-   <td style="text-align:right;"> 0.431 </td>
-   <td style="text-align:right;"> 0.811 </td>
-   <td style="text-align:right;"> 1.389 </td>
+   <td style="text-align:left;"> SA </td>
+   <td style="text-align:left;"> GS </td>
+   <td style="text-align:right;"> 5.660000 </td>
+   <td style="text-align:right;"> 0.9050 </td>
+   <td style="text-align:right;"> 5.789000 </td>
+   <td style="text-align:right;"> 0.713000 </td>
   </tr>
   <tr>
-   <td style="text-align:left;"> SAbs </td>
-   <td style="text-align:right;"> 5.310 </td>
-   <td style="text-align:right;"> 0.844 </td>
-   <td style="text-align:right;"> 0.279 </td>
-   <td style="text-align:right;"> 0.360 </td>
-   <td style="text-align:right;"> 0.966 </td>
-   <td style="text-align:right;"> 1.377 </td>
-  </tr>
-  <tr>
-   <td style="text-align:left;"> RSAgs </td>
-   <td style="text-align:right;"> 5.448 </td>
-   <td style="text-align:right;"> 0.640 </td>
-   <td style="text-align:right;"> 0.790 </td>
-   <td style="text-align:right;"> 0.500 </td>
-   <td style="text-align:right;"> 0.500 </td>
-   <td style="text-align:right;"> 1.279 </td>
-  </tr>
-  <tr>
-   <td style="text-align:left;"> GAgs </td>
-   <td style="text-align:right;"> 5.518 </td>
-   <td style="text-align:right;"> 0.593 </td>
-   <td style="text-align:right;"> 0.611 </td>
-   <td style="text-align:right;"> 0.732 </td>
-   <td style="text-align:right;"> 0.454 </td>
-   <td style="text-align:right;"> 1.256 </td>
-  </tr>
-  <tr>
-   <td style="text-align:left;"> SAgs </td>
-   <td style="text-align:right;"> 5.286 </td>
-   <td style="text-align:right;"> 0.912 </td>
-   <td style="text-align:right;"> 0.385 </td>
-   <td style="text-align:right;"> 0.061 </td>
-   <td style="text-align:right;"> 0.312 </td>
-   <td style="text-align:right;"> 1.406 </td>
+   <td style="text-align:left;"> Mean </td>
+   <td style="text-align:left;"> NA </td>
+   <td style="text-align:right;"> 6.050125 </td>
+   <td style="text-align:right;"> 0.7535 </td>
+   <td style="text-align:right;"> 6.307125 </td>
+   <td style="text-align:right;"> 0.707375 </td>
   </tr>
 </tbody>
 </table>
+
+Made VB curves by methot and strata by male
+
+separated group
+
+
+
+```r
+t_k_linf_sep <- t_k_linf %>% 
+  filter(group != "Mean") %>% 
+   separate(group, into = c("METHOD", "STRATA"), sep = " ")
+```
+
+
+
+```r
+# Definir la función de Von Bertalanffy
+von_bertalanffy <- function(t, L_inf, K) {
+  L_inf * (1 - exp(-K * (t-t0)))
+}
+
+# Generar una secuencia de tiempos (por ejemplo, de 0 a 5 años)
+t0 <- -0.3
+time <- seq(0, 7, by = 0.1)
+
+# Calcular longitud esperada para cada zona y tiempo
+df_curves_male <- t_k_linf_sep %>%
+  dplyr::select(c(1:2, 5:6)) %>% 
+  rowwise() %>%
+  mutate(length = list(von_bertalanffy(time, `L inf Male`, `K Male`))) %>%
+  unnest(length)
+# Agregar el vector de tiempo al DataFrame df_curves
+df_curves_male$time <- rep(time, nrow(t_k_linf_sep))
+# Graficar con ggplot
+male <- ggplot(df_curves_male,
+               aes(x = time, 
+                              y = length,
+                              group=STRATA,
+                              colour=STRATA)) +
+  geom_line(linewidth=1.1) +
+  labs(title = "Male",
+       x = "years",
+       y = "Length (cm)") +
+  theme_few()+
+  facet_wrap(.~METHOD)+
+  scale_colour_viridis_d(option="H",
+                         name="Strata")
+```
+Made VB curves by methot and strata by female
+
+
+```r
+# Calcular longitud esperada para cada zona y tiempo
+df_curves_female <- t_k_linf_sep %>%
+  dplyr::select(c(1:4)) %>% 
+  rowwise() %>%
+  mutate(length = list(von_bertalanffy(time, `L inf Female`, `K Female`))) %>%
+  unnest(length)
+# Agregar el vector de tiempo al DataFrame df_curves
+df_curves_female$time <- rep(time, nrow(t_k_linf_sep))
+# Graficar con ggplot
+female <- ggplot(df_curves_female,
+               aes(x = time, 
+                              y = length,
+                              group=STRATA,
+                              colour=STRATA)) +
+  geom_line(linewidth=1.1) +
+  labs(title = "Female",
+       x = "years",
+       y = "Length (cm)") +
+  theme_few()+
+  facet_wrap(.~METHOD)+
+  scale_colour_viridis_d(option="H",
+                         name="Strata")
+```
+
+both plot
+
+
+```r
+ggarrange(female, male, common.legend = TRUE,
+          ncol=1,
+          legend="bottom")
+```
+
+<img src="index_files/figure-html/unnamed-chunk-25-1.jpeg" style="display: block; margin: auto;" />
 
 
 ### Method NO LINEAR MODEL 
@@ -1083,18 +1301,37 @@ We use firts a descomposition methot with library `mixR` and then we use `nlmer`
 
 
 ```r
-# Agregar la nueva columna con los intervalos de longitud total
-sf6 <- sf5 |> 
-  drop_na(length_total_cm) |> 
-  filter(ID %in% "GERLASHE",
-         Year==2018,
-         Month==5)
+sf52020 <- sf5 %>% 
+  filter(sex_code %in% c("F", "M")) %>% 
+  drop_na(length_total_cm)
 
-sf5a <-  sf5 |> 
-  drop_na(length_total_cm ) |> 
-  filter(ID %in% "BS",
-         Year==2018)
-  
+# Lista para almacenar los modelos
+modelos <- list()
+
+# Lista de estratos y sexos
+estratos <- unique(sf52020$ID)
+sexos <- unique(sf52020$sex_code)
+
+# Bucle para ajustar modelos para cada combinación de estrato y sexo
+for (estrato in estratos) {
+  for (sexo in sexos) {
+    # Filtrar los datos para el estrato y sexo actual
+    datos_subset <- sf52020%>% filter(ID == estrato, sex_code == sexo)
+    
+    # Aplicar mixfit y guardar el modelo en la lista
+    mod <- mixfit(datos_subset$length_total_cm, ncomp = 4,
+                   pi = c(0.5, 0.5, 0.5, 0.5), 
+                   mu = c(3, 4, 5, 6), 
+                   sd = c(0.2, 0.2, 0.2, 0.2))
+    
+    modelos[[paste(estrato, sexo, sep = "_")]] <- mod
+  }
+}
+
+# Puedes acceder a cada modelo usando modelos$nombre_del_estrato_y_sexo
+# Por ejemplo, para acceder al modelo para el estrato "A" y sexo "M":
+# modelos$A_M
+
 # compruebo el n de comp
 
 s_weibull = select(sf5a$length_total_cm, ncomp = 2:6, family = 'weibull')
@@ -1129,8 +1366,11 @@ mod1_ev = mixfit(sf6$length_total_cm, ncomp = 2, ev = TRUE)
 
 In this exercises different bioanalogic methods are tested with General Algoritm
 
+#### MALE
+
+
 ```r
-MSSWI <- c(res_GAsswi$par, list(agemax = res_RSAsswi$agemax))
+MSSWI <- c(res_GAsswi$par, list(agemax = res_GAsswi$agemax))
 # use the function M_empirical to estimate natural mortality
 Msswi <- M_empirical(Linf = MSSWI$Linf, K_l = MSSWI$K, 
                   tmax = MSSWI$agemax, temp = 5,
@@ -1141,7 +1381,7 @@ Msswi <- M_empirical(Linf = MSSWI$Linf, K_l = MSSWI$K,
                              "RikhterEfanov"
                              ))
 # Bransfield
-BS <- c(res_GAbs$par, list(agemax = res_RSAbs$agemax))
+BS <- c(res_GAbs$par, list(agemax = res_GAbs$agemax))
 
 # use the function M_empirical to estimate natural mortality
 Mbs <- M_empirical(Linf = BS$Linf, K_l = BS$K, 
@@ -1153,7 +1393,7 @@ Mbs <- M_empirical(Linf = BS$Linf, K_l = BS$K,
                              "RikhterEfanov"
                              ))
 # GERLASHE
-GS <- c(res_GAgs$par, list(agemax = res_RSAgs$agemax))
+GS <- c(res_GAgs$par, list(agemax = res_GAgs$agemax))
 
 # use the function M_empirical to estimate natural mortality
 Mgs <- M_empirical(Linf = GS$Linf, K_l = GS$K, 
@@ -1165,7 +1405,7 @@ Mgs <- M_empirical(Linf = GS$Linf, K_l = GS$K,
                              "RikhterEfanov"
                              ))
 # Elephand Island
-MEI <- c(res_GAei$par, list(agemax = res_RSAei$agemax))
+MEI <- c(res_GAei$par, list(agemax = res_GAei$agemax))
 
 # use the function M_empirical to estimate natural mortality
 Mei <- M_empirical(Linf = MEI$Linf, K_l = MEI$K, 
@@ -1178,31 +1418,88 @@ Mei <- M_empirical(Linf = MEI$Linf, K_l = MEI$K,
                              ))
 ```
 
+#### FEMALE
+
+
+```r
+MSSWIhe <- c(res_GAsswihe$par, list(agemax = res_GAsswihe$agemax))
+# use the function M_empirical to estimate natural mortality
+Msswihe <- M_empirical(Linf = MSSWIhe$Linf, K_l = MSSWIhe$K, 
+                  tmax = MSSWIhe$agemax, temp = 5,
+                  tm50 = 2,
+                  method = c("Pauly_Linf", 
+                            "Hoenig",
+                             "AlversonCarney",
+                             "RikhterEfanov"
+                             ))
+# Bransfield
+BShe <- c(res_GAbshe$par, list(agemax = res_GAbshe$agemax))
+
+# use the function M_empirical to estimate natural mortality
+Mbshe <- M_empirical(Linf = BShe$Linf, K_l = BShe$K, 
+                  tmax = BShe$agemax, temp = 5,
+                  tm50 = 2,
+                  method = c("Pauly_Linf", 
+                              "Hoenig",
+                             "AlversonCarney",
+                             "RikhterEfanov"
+                             ))
+# GERLASHE
+GShe <- c(res_GAgshe$par, list(agemax = res_GAgshe$agemax))
+
+# use the function M_empirical to estimate natural mortality
+Mgshe <- M_empirical(Linf = GShe$Linf, K_l = GShe$K, 
+                  tmax = GShe$agemax, temp = 5,
+                   tm50 = 2,
+                  method = c("Pauly_Linf", 
+                             "Hoenig",
+                             "AlversonCarney",
+                             "RikhterEfanov"
+                             ))
+# Elephand Island
+MEIhe <- c(res_GAeihe$par, list(agemax = res_GAeihe$agemax))
+
+# use the function M_empirical to estimate natural mortality
+Meihe <- M_empirical(Linf = MEIhe$Linf, K_l = MEIhe$K, 
+                  tmax = MEIhe$agemax, temp = 5,
+                  tm50 = 2,
+                  method = c("Pauly_Linf", 
+                             "Hoenig",
+                             "AlversonCarney",
+                             "RikhterEfanov"
+                             ))
+```
+
 
 ```r
 # junto las bases
 
-Total_M <- cbind(Mei, Mbs, Mgs, Msswi)
-colnames(Total_M) <- c("EI", "BS" , "GS", "SSWI")
-mean <- colMeans(Total_M, na.rm = TRUE)
+Total_M_male <- cbind(Mei, Mbs, Mgs, Msswi)
+colnames(Total_M_male) <- c("EI", "BS" , "GS", "SSWI")
+mean_m <- colMeans(Total_M_male, na.rm = TRUE)
+Total_M_Mean_male <- rbind(Total_M_male, Mean = mean_m)
 # Agregar los promedios como una nueva fila al final del array
-Total_M_Mean <- rbind(Total_M, Mean = mean)
+
+Total_M_femal <- cbind(Meihe, Mbshe, Mgshe, Msswihe)
+colnames(Total_M_femal) <- c("EI", "BS" , "GS", "SSWI")
+mean_m <- colMeans(Total_M_femal, na.rm = TRUE)
+Total_M_Mean_femal <- rbind(Total_M_femal, Mean = mean_m)
 ```
 
 
 
 ```r
-Total_M_Mean  %>%
+Total_M_Mean_male  %>%
   kbl(booktabs = T,
       position="ht!",
-    caption = "Estimated M by Strata") %>%
+    caption = "Estimated M by Strata for Male") %>%
   kable_styling(latex_options = c("striped",
                                   "condensed"),
                 full_width = FALSE)
 ```
 
 <table class="table" style="color: black; width: auto !important; margin-left: auto; margin-right: auto;">
-<caption>Estimated M by Strata</caption>
+<caption>Estimated M by Strata for Male</caption>
  <thead>
   <tr>
    <th style="text-align:left;">   </th>
@@ -1215,37 +1512,37 @@ Total_M_Mean  %>%
 <tbody>
   <tr>
    <td style="text-align:left;"> Alverson and Carney (1975) </td>
-   <td style="text-align:right;"> 0.6030 </td>
-   <td style="text-align:right;"> 0.7790 </td>
-   <td style="text-align:right;"> 0.8530 </td>
-   <td style="text-align:right;"> 0.8660 </td>
+   <td style="text-align:right;"> 0.6450 </td>
+   <td style="text-align:right;"> 0.7330 </td>
+   <td style="text-align:right;"> 1.106 </td>
+   <td style="text-align:right;"> 0.7400 </td>
   </tr>
   <tr>
    <td style="text-align:left;"> Hoenig (1983) - Joint Equation </td>
    <td style="text-align:right;"> 0.8690 </td>
    <td style="text-align:right;"> 0.8690 </td>
-   <td style="text-align:right;"> 0.8690 </td>
+   <td style="text-align:right;"> 0.869 </td>
    <td style="text-align:right;"> 0.8690 </td>
   </tr>
   <tr>
    <td style="text-align:left;"> Hoenig (1983) - Fish Equation </td>
    <td style="text-align:right;"> 0.8470 </td>
    <td style="text-align:right;"> 0.8470 </td>
-   <td style="text-align:right;"> 0.8470 </td>
+   <td style="text-align:right;"> 0.847 </td>
    <td style="text-align:right;"> 0.8470 </td>
   </tr>
   <tr>
    <td style="text-align:left;"> Pauly (1980) - Length Equation </td>
-   <td style="text-align:right;"> 1.2090 </td>
-   <td style="text-align:right;"> 0.9710 </td>
-   <td style="text-align:right;"> 0.9160 </td>
-   <td style="text-align:right;"> 0.8820 </td>
+   <td style="text-align:right;"> 1.0770 </td>
+   <td style="text-align:right;"> 1.0210 </td>
+   <td style="text-align:right;"> 0.620 </td>
+   <td style="text-align:right;"> 1.0270 </td>
   </tr>
   <tr>
    <td style="text-align:left;"> Rikhter and Efanov (1976) </td>
    <td style="text-align:right;"> 0.7680 </td>
    <td style="text-align:right;"> 0.7680 </td>
-   <td style="text-align:right;"> 0.7680 </td>
+   <td style="text-align:right;"> 0.768 </td>
    <td style="text-align:right;"> 0.7680 </td>
   </tr>
   <tr>
@@ -1257,13 +1554,180 @@ Total_M_Mean  %>%
   </tr>
   <tr>
    <td style="text-align:left;"> Mean </td>
-   <td style="text-align:right;"> 0.8592 </td>
-   <td style="text-align:right;"> 0.8468 </td>
-   <td style="text-align:right;"> 0.8506 </td>
-   <td style="text-align:right;"> 0.8464 </td>
+   <td style="text-align:right;"> 0.8412 </td>
+   <td style="text-align:right;"> 0.8476 </td>
+   <td style="text-align:right;"> 0.842 </td>
+   <td style="text-align:right;"> 0.8502 </td>
   </tr>
 </tbody>
 </table>
+
+```r
+Total_M_Mean_femal  %>%
+  kbl(booktabs = T,
+      position="ht!",
+    caption = "Estimated M by Strata for Female") %>%
+  kable_styling(latex_options = c("striped",
+                                  "condensed"),
+                full_width = FALSE)
+```
+
+<table class="table" style="color: black; width: auto !important; margin-left: auto; margin-right: auto;">
+<caption>Estimated M by Strata for Female</caption>
+ <thead>
+  <tr>
+   <th style="text-align:left;">   </th>
+   <th style="text-align:right;"> EI </th>
+   <th style="text-align:right;"> BS </th>
+   <th style="text-align:right;"> GS </th>
+   <th style="text-align:right;"> SSWI </th>
+  </tr>
+ </thead>
+<tbody>
+  <tr>
+   <td style="text-align:left;"> Alverson and Carney (1975) </td>
+   <td style="text-align:right;"> 0.8880 </td>
+   <td style="text-align:right;"> 0.7780 </td>
+   <td style="text-align:right;"> 0.769 </td>
+   <td style="text-align:right;"> 0.7040 </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> Hoenig (1983) - Joint Equation </td>
+   <td style="text-align:right;"> 0.8690 </td>
+   <td style="text-align:right;"> 0.8690 </td>
+   <td style="text-align:right;"> 0.869 </td>
+   <td style="text-align:right;"> 0.8690 </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> Hoenig (1983) - Fish Equation </td>
+   <td style="text-align:right;"> 0.8470 </td>
+   <td style="text-align:right;"> 0.8470 </td>
+   <td style="text-align:right;"> 0.847 </td>
+   <td style="text-align:right;"> 0.8470 </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> Pauly (1980) - Length Equation </td>
+   <td style="text-align:right;"> 0.8340 </td>
+   <td style="text-align:right;"> 0.9710 </td>
+   <td style="text-align:right;"> 0.982 </td>
+   <td style="text-align:right;"> 1.0300 </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> Rikhter and Efanov (1976) </td>
+   <td style="text-align:right;"> 0.7680 </td>
+   <td style="text-align:right;"> 0.7680 </td>
+   <td style="text-align:right;"> 0.768 </td>
+   <td style="text-align:right;"> 0.7680 </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> Mean </td>
+   <td style="text-align:right;"> 0.8412 </td>
+   <td style="text-align:right;"> 0.8466 </td>
+   <td style="text-align:right;"> 0.847 </td>
+   <td style="text-align:right;"> 0.8436 </td>
+  </tr>
+</tbody>
+</table>
+
+
+Plot to female
+
+```r
+# Convertir la matriz a data.frame
+df_female <- as.data.frame(Total_M_Mean_femal)
+
+# Agregar la columna de métodos
+df_female$Method <- rownames(Total_M_Mean_femal)
+
+# Convertir el data.frame a formato largo
+df_long <- df_female %>%
+  pivot_longer(cols = EI:SSWI, 
+               names_to = "Stratum", 
+               values_to = "Value")
+
+# Dot Plot
+m_female<- ggplot(df_long %>%
+                              drop_na() %>%
+                              filter(Method != "Mean"), 
+                            aes(x = Stratum, 
+                                y = Value,
+                                fill = Method)) +
+    geom_point(size = 3,     
+              shape = 21,   
+              color = "black") + 
+  geom_text_repel(aes(label = round(Value, 3)),  
+                  size = 3,                      
+                  box.padding = 0.35,            
+                  point.padding = 0.5,         
+                  segment.color = 'grey50',
+                  min.segment.length = 0, 
+                  nudge_y = 0.05,   
+                  direction = "both") +
+  labs(title = "Female",
+       x = "",
+       y = "Natural Mortality",
+       fill = "Method") +
+  theme_few() +
+  scale_fill_viridis_d(option = "H") +
+  ylim(0, 2)
+```
+
+Plot to male
+
+```r
+# Convertir la matriz a data.frame
+df_male <- as.data.frame(Total_M_Mean_male)
+
+# Agregar la columna de métodos
+df_male$Method <- rownames(Total_M_Mean_male)
+
+# Convertir el data.frame a formato largo
+df_long_male <- df_male %>%
+  pivot_longer(cols = EI:SSWI, 
+               names_to = "Stratum", 
+               values_to = "Value") 
+
+# Dot Plot
+m_male<- ggplot(df_long_male %>%
+                              drop_na() %>%
+                              filter(Method != "Mean"), 
+                            aes(x = Stratum, 
+                                y = Value,
+                                fill = Method)) +
+  geom_point(size = 3,     
+              shape = 21,   
+              color = "black") +  
+  geom_text_repel(aes(label = round(Value, 3)),  
+                  size = 3,                      
+                  box.padding = 0.35,            
+                  point.padding = 0.5,         
+                  segment.color = 'grey50',
+                  min.segment.length = 0, 
+                  nudge_y = 0.05,   
+                  direction = "both") +
+  labs(title = "Male",
+       x = "",
+       y = "Natural Mortality",
+       fill = "Method") +
+  theme_few() +
+  scale_fill_viridis_d(option = "H") +
+  ylim(0, 2)
+```
+
+both plot
+
+
+```r
+ggarrange(m_female, m_male, 
+          common.legend = TRUE,
+          ncol=1,
+          legend="bottom")
+```
+
+<img src="index_files/figure-html/unnamed-chunk-33-1.jpeg" style="display: block; margin: auto;" />
+Statistical diferences
+
+
 
 
 # References

@@ -261,6 +261,16 @@ knitr::include_graphics(c('index_files/figure-html/unnamed-chunk-13-1.jpeg',
 
 \end{landscape}
 
+
+```{r, fig.show='hold', fig.cap="Curves Vom Bertalanffy to kril by strata"}
+knitr::include_graphics('index_files/figure-html/unnamed-chunk-25-1.jpeg')
+```
+
+
+```{r, out.width='100%', fig.cap="Natural Mortality estimate by strata and method"}
+knitr::include_graphics('index_files/figure-html/Nat_M.png')
+```
+
 \newpage
 
 # SUPLEMENTARY MATERIAL
