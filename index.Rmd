@@ -415,6 +415,87 @@ Method based on @Pauly1987 and @Mildenberger2017
 
 #### Krill Male
 
+first we use `mixR` to identified numbers of compoenent (modal compositions) we have each stratum. With this result, set `ELEFAN` method
+
+
+```{r eval=FALSE}
+unique_ids <- unique(sf5$ID)
+
+obj_id <- list()
+
+for (id in unique_ids) {
+  filtered_data <- sf5 %>% 
+    drop_na(length_total_cm) %>% 
+    filter(sex_code %in% "M", 
+           ID !="JOIN",
+           ID == id)
+  obj_id[[id]] <- filtered_data
+}
+
+# select number of components
+
+s_normalgs = select(obj_id$GERLASHE$length_total_cm, ncomp = 2:6)
+plot(s_normalgs)
+s_normalei = select(obj_id$EI$length_total_cm, ncomp = 2:6)
+plot(s_normalei)
+s_normalbs = select(obj_id$BS$length_total_cm, ncomp = 2:6)
+plot(s_normalbs)
+s_normalsswi = select(obj_id$SSWI$length_total_cm, ncomp = 2:6)
+plot(s_normalsswi)
+
+# fit a Normal mixture model
+modgs = mixfit(obj_id$GERLASHE$length_total_cm, ncomp = 3,
+              pi = c(0.5, 0.5, 0.5), 
+              mu = c( 3, 4, 5), 
+              sd = c(0.2, 0.2, 0.2))
+
+
+# fit a Normal mixture model
+modei = mixfit(obj_id$EI$length_total_cm, ncomp = 4,
+              pi = c(0.5, 0.5, 0.5, 0.5), 
+              mu = c( 3, 4, 5, 6), 
+              sd = c(0.2, 0.2, 0.2, 0.2))
+
+
+# fit a Normal mixture model
+modbs = mixfit(obj_id$BS$length_total_cm, ncomp = 5,
+              pi = c(0.5, 0.5, 0.5, 0.5, 0.5), 
+              mu = c( 2, 3, 4, 5, 6), 
+              sd = c(0.2, 0.2, 0.2, 0.2, 0.2))
+
+
+# fit a Normal mixture model
+modsswi = mixfit(obj_id$SSIW$length_total_cm, ncomp = 4,
+              pi = c(0.5, 0.5, 0.5, 0.5), 
+              mu = c( 3, 4, 5, 6), 
+              sd = c(0.2, 0.2, 0.2, 0.2))
+```
+
+
+```{r, eval=FALSE, fig.width=8, fig.height=5}
+GSplot <- plot(modgs,
+     theme = "bw",
+     title ="GERLASHE")
+EIplot <- plot(modei,
+     theme = "bw",
+     title ="ELEFANT ISLAND")
+BSplot <- plot(modbs,
+     theme = "bw",
+     title ="BRANSFIELD STRAIT")
+SSWIplot <- plot(modsswi,
+     theme = "bw",
+     title ="SSWI")
+
+ggarrange(GSplot, 
+          EIplot, 
+          BSplot, 
+          SSWIplot, 
+          common.legend = TRUE,
+          ncol=4,
+          legend="right")
+```
+
+
 ```{r}
 #### Parameters to `SSWI`
 
@@ -918,54 +999,24 @@ ggarrange(female, male, common.legend = TRUE,
 ```
 
 
-### Method NO LINEAR MODEL 
+### Method Nonlinear Mixed-Effects Models
 
+Fit a nonlinear mixed-effects model (NLMM) to data, via maximum likelihood using `lme4` (@Bates2015) to calcularte parametrs
 
-We use firts a descomposition methot with library `mixR` and then we use `nlmer` (@Bates2015) to calcularte parametrs
+(work in progress)
 
 ```{r eval=FALSE, echo=TRUE}
+
+#We use firts a descomposition methot with library `mixR` and the
+
 sf52020 <- sf5 %>% 
-  filter(sex_code %in% c("F", "M")) %>% 
+  filter(sex_code %in% "F",
+         ID == "EI",
+         Year =="2020") %>% 
   drop_na(length_total_cm)
 
-# Lista para almacenar los modelos
-modelos <- list()
-
-# Lista de estratos y sexos
-estratos <- unique(sf52020$ID)
-sexos <- unique(sf52020$sex_code)
-
-# Bucle para ajustar modelos para cada combinación de estrato y sexo
-for (estrato in estratos) {
-  for (sexo in sexos) {
-    # Filtrar los datos para el estrato y sexo actual
-    datos_subset <- sf52020%>% filter(ID == estrato, sex_code == sexo)
-    
-    # Aplicar mixfit y guardar el modelo en la lista
-    mod <- mixfit(datos_subset$length_total_cm, ncomp = 4,
-                   pi = c(0.5, 0.5, 0.5, 0.5), 
-                   mu = c(3, 4, 5, 6), 
-                   sd = c(0.2, 0.2, 0.2, 0.2))
-    
-    modelos[[paste(estrato, sexo, sep = "_")]] <- mod
-  }
-}
-
-# Puedes acceder a cada modelo usando modelos$nombre_del_estrato_y_sexo
-# Por ejemplo, para acceder al modelo para el estrato "A" y sexo "M":
-# modelos$A_M
-
-# compruebo el n de comp
-
-s_weibull = select(sf5a$length_total_cm, ncomp = 2:6, family = 'weibull')
-
-s_normal = select(sf5a$length_total_cm, ncomp = 2:6)
-
-
-
-
 # fit a Normal mixture model
-mod1 = mixfit(sf5a$length_total_cm, ncomp = 4,
+mod1 = mixfit(sf52020$length_total_cm, ncomp = 4,
               pi = c(0.5, 0.5, 0.5, 0.5), 
               mu = c( 3, 4, 5, 6), 
               sd = c(0.2, 0.2, 0.2, 0.2))
