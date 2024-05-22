@@ -2,7 +2,7 @@
 title: "Derive growth parameters and natural mortality rates for krill while accounting for spatial heterogeneity in the Western Antarctic Peninsula."
 subtitle: "Working Paper to be submitted in a CCAMLR EMM-WG 2024"
 author: "Mardones, M; Cárdenas, C., Krüger, L., Santa Cruz, F."
-date:  "19 May, 2024"
+date:  "22 May, 2024"
 bibliography: param.bib
 csl: apa.csl
 link-citations: yes
@@ -224,7 +224,7 @@ histogram length data to viz in anthor way.
 
 ```r
 jzstrata <- ggplot(sf4 %>% 
-                     mutate(ID = if_else(ID == "Extra", "GERLASHE", ID)) %>% 
+                     mutate(ID = if_else(ID == "Extra", "GERLACHE", ID)) %>% 
                filter(Year>2010,
                       ID !="Outer"),
              aes(x=length_total_cm, 
@@ -261,7 +261,7 @@ sf5 <- sf4 |>
         "Month",
         "sex_code",
          "greenweight_kg")) |> 
-  mutate(ID = if_else(ID == "Extra", "GERLASHE", ID)) |>  
+  mutate(ID = if_else(ID == "Extra", "GERLACHE", ID)) |>  
   filter(ID !="Outer") |> 
   data.frame()
 ```
@@ -314,7 +314,7 @@ kbl(tabla_proporcion,
    <td style="text-align:left;"> 2 </td>
   </tr>
   <tr>
-   <td style="text-align:left;"> GERLASHE </td>
+   <td style="text-align:left;"> GERLACHE </td>
    <td style="text-align:right;"> 12.13 </td>
    <td style="text-align:left;"> 3 </td>
   </tr>
@@ -340,14 +340,14 @@ kbl(tabla_proporcion,
 #MALE
 
 sf5fil <- sf5 |>
-  filter(ID %in% c("BS", "EI", "GERLASHE", "SSIW"),
+  filter(ID %in% c("BS", "EI", "GERLACHE", "SSIW"),
          sex_code %in% "M") |>  
   mutate(date_catchperiod_start = as.Date(date_catchperiod_start)) |>  
   mutate(yearly_Group = floor_date(date_catchperiod_start, "year")) |>   # New column
   drop_na(length_total_cm) 
 
 # Definir los nombres correspondientes a cada objeto lfq_results
-nombres <- c("SSI", "BS", "GERLASHE", "EI")
+nombres <- c("SSI", "BS", "GERLACHE", "EI")
 # Crear una lista para almacenar los resultados de cada ID
 lfq_results <- list()
 # Iterar sobre cada ID
@@ -375,14 +375,14 @@ for (id in unique(sf5fil$ID)) {
 #FEMALE
 
 sf5filhe <- sf5 |>
-  filter(ID %in% c("BS", "EI", "GERLASHE", "SSIW"),
+  filter(ID %in% c("BS", "EI", "GERLACHE", "SSIW"),
          sex_code %in% "F") |>  
   mutate(date_catchperiod_start = as.Date(date_catchperiod_start)) |>  
   mutate(yearly_Group = floor_date(date_catchperiod_start, "year")) |>   # New column
   drop_na(length_total_cm) 
 
 # Definir los nombres correspondientes a cada objeto lfq_results
-nombres <- c("SSI", "BS", "GERLASHE", "EI")
+nombres <- c("SSI", "BS", "GERLACHE", "EI")
 # Crear una lista para almacenar los resultados de cada ID
 lfq_resultshe <- list()
 # Iterar sobre cada ID
@@ -452,7 +452,7 @@ Bhattacharya(lfq_results$BS)
 
 
 ```r
-Bhattacharya(lfq_results$GERLASHE)
+Bhattacharya(lfq_results$GERLACHE)
 ```
 
 ```
@@ -471,7 +471,7 @@ Male
 
 ```r
 # Definir los nombres correspondientes a cada objeto lfq_results
-nombres <- c("SSI", "BS", "GERLASHE", "EI")
+nombres <- c("SSI", "BS", "GERLACHE", "EI")
 # Iterar sobre cada objeto lfq almacenado en lfq_results
 for (i in seq_along(lfq_results)) {
   lfq <- lfq_results[[i]]
@@ -502,7 +502,7 @@ Female
 # Crear una lista para almacenar los resultados de PW_results <- list()
 
 # Definir los nombres correspondientes a cada objeto lfq_results
-nombres <- c("SSI", "BS", "GERLASHE", "EI")
+nombres <- c("SSI", "BS", "GERLACHE", "EI")
 
 # Iterar sobre cada objeto lfq almacenado en lfq_results
 for (i in seq_along(lfq_resultshe)) {
@@ -536,6 +536,89 @@ Method based on @Pauly1987 and @Mildenberger2017
 
 #### Krill Male
 
+first we use `mixR` to identified numbers of compoenent (modal compositions) we have each stratum. With this result, set `ELEFAN` method
+
+
+
+```r
+unique_ids <- unique(sf5$ID)
+
+obj_id <- list()
+
+for (id in unique_ids) {
+  filtered_data <- sf5 %>% 
+    drop_na(length_total_cm) %>% 
+    filter(sex_code %in% "M", 
+           ID !="JOIN",
+           ID == id)
+  obj_id[[id]] <- filtered_data
+}
+
+# select number of components
+
+s_normalgs = select(obj_id$GERLACHE$length_total_cm, ncomp = 2:6)
+plot(s_normalgs)
+s_normalei = select(obj_id$EI$length_total_cm, ncomp = 2:6)
+plot(s_normalei)
+s_normalbs = select(obj_id$BS$length_total_cm, ncomp = 2:6)
+plot(s_normalbs)
+s_normalsswi = select(obj_id$SSWI$length_total_cm, ncomp = 2:6)
+plot(s_normalsswi)
+
+# fit a Normal mixture model
+modgs = mixfit(obj_id$GERLACHE$length_total_cm, ncomp = 3,
+              pi = c(0.5, 0.5, 0.5), 
+              mu = c( 3, 4, 5), 
+              sd = c(0.2, 0.2, 0.2))
+
+
+# fit a Normal mixture model
+modei = mixfit(obj_id$EI$length_total_cm, ncomp = 4,
+              pi = c(0.5, 0.5, 0.5, 0.5), 
+              mu = c( 3, 4, 5, 6), 
+              sd = c(0.2, 0.2, 0.2, 0.2))
+
+
+# fit a Normal mixture model
+modbs = mixfit(obj_id$BS$length_total_cm, ncomp = 5,
+              pi = c(0.5, 0.5, 0.5, 0.5, 0.5), 
+              mu = c( 2, 3, 4, 5, 6), 
+              sd = c(0.2, 0.2, 0.2, 0.2, 0.2))
+
+
+# fit a Normal mixture model
+modsswi = mixfit(obj_id$SSIW$length_total_cm, ncomp = 4,
+              pi = c(0.5, 0.5, 0.5, 0.5), 
+              mu = c( 3, 4, 5, 6), 
+              sd = c(0.2, 0.2, 0.2, 0.2))
+```
+
+
+
+```r
+GSplot <- plot(modgs,
+     theme = "bw",
+     title ="GERLACHE")
+EIplot <- plot(modei,
+     theme = "bw",
+     title ="ELEFANT ISLAND")
+BSplot <- plot(modbs,
+     theme = "bw",
+     title ="BRANSFIELD STRAIT")
+SSWIplot <- plot(modsswi,
+     theme = "bw",
+     title ="SSWI")
+
+ggarrange(GSplot, 
+          EIplot, 
+          BSplot, 
+          SSWIplot, 
+          common.legend = TRUE,
+          ncol=4,
+          legend="right")
+```
+
+
 
 ```r
 #### Parameters to `SSWI`
@@ -565,12 +648,12 @@ res_SAsswi <- ELEFAN_SA(lfq_results$SSIW,
 ```
 ## Simulated annealing is running. 
 ## This will take approximately 0.5 minutes.
-## timeSpan = 30.00551 maxTime = 30
-## Emini is: -0.2570441366
+## timeSpan = 30.002368 maxTime = 30
+## Emini is: -0.2717015803
 ## xmini are:
-## 6.418895303 0.7678352515 0.5033732662 0.490536049 0.8187059425 
-## Totally it used 30.005531 secs
-## No. of function call is: 1146
+## 6.593828037 0.693300965 0.4647053033 0.7490957195 0.8974912463 
+## Totally it used 30.002385 secs
+## No. of function call is: 1663
 ```
 
 ```r
@@ -597,7 +680,7 @@ res_GAsswi <- ELEFAN_GA(lfq_results$SSIW,
 ## Genetic algorithm is running. This might take some time.
 ```
 
-<img src="index_files/figure-html/unnamed-chunk-17-1.jpeg" style="display: block; margin: auto;" />
+<img src="index_files/figure-html/unnamed-chunk-19-1.jpeg" style="display: block; margin: auto;" />
 
 ```r
 #### Parameters to `EI`
@@ -627,12 +710,12 @@ res_SAei <- ELEFAN_SA(lfq_results$EI,
 ```
 ## Simulated annealing is running. 
 ## This will take approximately 0.5 minutes.
-## timeSpan = 30.010647 maxTime = 30
+## timeSpan = 30.008733 maxTime = 30
 ## Emini is: -0.2367092272
 ## xmini are:
 ## 7.314306291 0.9412915653 0.6182883382 0.7314349413 0.4690019973 
-## Totally it used 30.010668 secs
-## No. of function call is: 1358
+## Totally it used 30.008747 secs
+## No. of function call is: 2013
 ```
 
 ```r
@@ -659,7 +742,7 @@ res_GAei <- ELEFAN_GA(lfq_results$EI,
 ## Genetic algorithm is running. This might take some time.
 ```
 
-<img src="index_files/figure-html/unnamed-chunk-17-2.jpeg" style="display: block; margin: auto;" />
+<img src="index_files/figure-html/unnamed-chunk-19-2.jpeg" style="display: block; margin: auto;" />
 
 ```r
 #### Parameters to `BS`
@@ -689,12 +772,12 @@ res_SAbs <- ELEFAN_SA(lfq_results$BS,
 ```
 ## Simulated annealing is running. 
 ## This will take approximately 0.5 minutes.
-## timeSpan = 30.088881 maxTime = 30
-## Emini is: -0.3182638225
+## timeSpan = 30.049245 maxTime = 30
+## Emini is: -0.415276945
 ## xmini are:
-## 5.593892905 0.604283656 0.1065582037 0.643085584 0.9565868378 
-## Totally it used 30.0889 secs
-## No. of function call is: 1236
+## 5.894466101 0.9346580543 0.9088346824 0.4661808193 0.3456628323 
+## Totally it used 30.049263 secs
+## No. of function call is: 1799
 ```
 
 ```r
@@ -721,13 +804,13 @@ res_GAbs <- ELEFAN_GA(lfq_results$BS,
 ## Genetic algorithm is running. This might take some time.
 ```
 
-<img src="index_files/figure-html/unnamed-chunk-17-3.jpeg" style="display: block; margin: auto;" />
+<img src="index_files/figure-html/unnamed-chunk-19-3.jpeg" style="display: block; margin: auto;" />
 
 ```r
-#### Parameters to `GERLASHE`
+#### Parameters to `GERLACHE`
 
 # run ELEFAN with simulated annealing
-res_SAgs <- ELEFAN_SA(lfq_results$GERLASHE, 
+res_SAgs <- ELEFAN_SA(lfq_results$GERLACHE, 
                     SA_time = 60*0.5, 
                     MA = 5, 
                     agemax = 5,
@@ -751,17 +834,17 @@ res_SAgs <- ELEFAN_SA(lfq_results$GERLASHE,
 ```
 ## Simulated annealing is running. 
 ## This will take approximately 0.5 minutes.
-## timeSpan = 30.0003 maxTime = 30
+## timeSpan = 30.002785 maxTime = 30
 ## Emini is: -0.2869010907
 ## xmini are:
 ## 5.789427124 0.7127949446 0.4013525844 0.5469309241 0.1102455743 
-## Totally it used 30.000324 secs
-## No. of function call is: 1686
+## Totally it used 30.002797 secs
+## No. of function call is: 2397
 ```
 
 ```r
 # run ELEFAN with genetic algorithm
-res_GAgs <- ELEFAN_GA(lfq_results$GERLASHE, 
+res_GAgs <- ELEFAN_GA(lfq_results$GERLACHE, 
                     MA = 5, 
                     seasonalised = TRUE, 
                     maxiter = 10, 
@@ -783,7 +866,7 @@ res_GAgs <- ELEFAN_GA(lfq_results$GERLASHE,
 ## Genetic algorithm is running. This might take some time.
 ```
 
-<img src="index_files/figure-html/unnamed-chunk-17-4.jpeg" style="display: block; margin: auto;" />
+<img src="index_files/figure-html/unnamed-chunk-19-4.jpeg" style="display: block; margin: auto;" />
 #### Krill Female
 
 
@@ -816,12 +899,12 @@ res_SAsswihe <- ELEFAN_SA(lfq_resultshe$SSIW,
 ```
 ## Simulated annealing is running. 
 ## This will take approximately 0.5 minutes.
-## timeSpan = 30.001515 maxTime = 30
+## timeSpan = 30.007851 maxTime = 30
 ## Emini is: -0.2316358367
 ## xmini are:
 ## 6.003211424 0.6594774183 0.1511300988 0.1896827698 0.9636289105 
-## Totally it used 30.001535 secs
-## No. of function call is: 1074
+## Totally it used 30.007863 secs
+## No. of function call is: 1707
 ```
 
 ```r
@@ -848,7 +931,7 @@ res_GAsswihe <- ELEFAN_GA(lfq_resultshe$SSIW,
 ## Genetic algorithm is running. This might take some time.
 ```
 
-<img src="index_files/figure-html/unnamed-chunk-18-1.jpeg" style="display: block; margin: auto;" />
+<img src="index_files/figure-html/unnamed-chunk-20-1.jpeg" style="display: block; margin: auto;" />
 
 ```r
 #### Parameters to `EI`
@@ -878,12 +961,12 @@ res_SAeihe <- ELEFAN_SA(lfq_resultshe$EI,
 ```
 ## Simulated annealing is running. 
 ## This will take approximately 0.5 minutes.
-## timeSpan = 30.000076 maxTime = 30
-## Emini is: -0.2964366709
+## timeSpan = 30.001628 maxTime = 30
+## Emini is: -0.3102707119
 ## xmini are:
-## 5.585338324 0.9580215203 0.2021615843 0.7399474084 0.666007027 
-## Totally it used 30.000094 secs
-## No. of function call is: 1361
+## 5.891642671 0.6415225773 0.6244705464 0.6804234903 0.7977122728 
+## Totally it used 30.00164 secs
+## No. of function call is: 1976
 ```
 
 ```r
@@ -910,7 +993,7 @@ res_GAeihe <- ELEFAN_GA(lfq_resultshe$EI,
 ## Genetic algorithm is running. This might take some time.
 ```
 
-<img src="index_files/figure-html/unnamed-chunk-18-2.jpeg" style="display: block; margin: auto;" />
+<img src="index_files/figure-html/unnamed-chunk-20-2.jpeg" style="display: block; margin: auto;" />
 
 ```r
 #### Parameters to `BS`
@@ -941,12 +1024,12 @@ res_SAbshe <- ELEFAN_SA(lfq_resultshe$BS,
 ```
 ## Simulated annealing is running. 
 ## This will take approximately 0.5 minutes.
-## timeSpan = 30.011489 maxTime = 30
+## timeSpan = 30.009726 maxTime = 30
 ## Emini is: -0.4349139705
 ## xmini are:
 ## 5.923948187 0.8310357623 0.5259462683 0.3320332617 0.281676233 
-## Totally it used 30.011507 secs
-## No. of function call is: 1226
+## Totally it used 30.009741 secs
+## No. of function call is: 1779
 ```
 
 ```r
@@ -973,14 +1056,14 @@ res_GAbshe <- ELEFAN_GA(lfq_resultshe$BS,
 ## Genetic algorithm is running. This might take some time.
 ```
 
-<img src="index_files/figure-html/unnamed-chunk-18-3.jpeg" style="display: block; margin: auto;" />
+<img src="index_files/figure-html/unnamed-chunk-20-3.jpeg" style="display: block; margin: auto;" />
 
 ```r
-#### Parameters to `GERLASHE`
+#### Parameters to `GERLACHE`
 
 
 # run ELEFAN with simulated annealing
-res_SAgshe <- ELEFAN_SA(lfq_resultshe$GERLASHE, 
+res_SAgshe <- ELEFAN_SA(lfq_resultshe$GERLACHE, 
                     SA_time = 60*0.5, 
                     MA = 5, 
                     agemax = 5,
@@ -1004,17 +1087,17 @@ res_SAgshe <- ELEFAN_SA(lfq_resultshe$GERLASHE,
 ```
 ## Simulated annealing is running. 
 ## This will take approximately 0.5 minutes.
-## timeSpan = 30.006023 maxTime = 30
-## Emini is: -0.3825402709
+## timeSpan = 30.009385 maxTime = 30
+## Emini is: -0.3921830599
 ## xmini are:
-## 5.659959408 0.9045192397 0.9905485124 0.03362630308 0.549246957 
-## Totally it used 30.006043 secs
-## No. of function call is: 1648
+## 6.05175862 0.6535953842 0.2468843122 0.4196294853 0.2307560779 
+## Totally it used 30.009399 secs
+## No. of function call is: 2243
 ```
 
 ```r
 # run ELEFAN with genetic algorithm
-res_GAgshe <- ELEFAN_GA(lfq_resultshe$GERLASHE, 
+res_GAgshe <- ELEFAN_GA(lfq_resultshe$GERLACHE, 
                     MA = 5, 
                     seasonalised = TRUE, 
                     maxiter = 10, 
@@ -1036,7 +1119,7 @@ res_GAgshe <- ELEFAN_GA(lfq_resultshe$GERLASHE,
 ## Genetic algorithm is running. This might take some time.
 ```
 
-<img src="index_files/figure-html/unnamed-chunk-18-4.jpeg" style="display: block; margin: auto;" />
+<img src="index_files/figure-html/unnamed-chunk-20-4.jpeg" style="display: block; margin: auto;" />
 
 Resuming parameters to both sex  by strata to krill
 
@@ -1135,74 +1218,74 @@ t_k_linf %>%
   <tr>
    <td style="text-align:left;"> GA </td>
    <td style="text-align:left;"> BS </td>
-   <td style="text-align:right;"> 6.00100 </td>
-   <td style="text-align:right;"> 0.752 </td>
-   <td style="text-align:right;"> 5.907000 </td>
-   <td style="text-align:right;"> 0.82000 </td>
+   <td style="text-align:right;"> 6.184000 </td>
+   <td style="text-align:right;"> 0.542000 </td>
+   <td style="text-align:right;"> 5.93800 </td>
+   <td style="text-align:right;"> 0.75100 </td>
   </tr>
   <tr>
    <td style="text-align:left;"> SA </td>
    <td style="text-align:left;"> BS </td>
-   <td style="text-align:right;"> 5.92400 </td>
-   <td style="text-align:right;"> 0.831 </td>
-   <td style="text-align:right;"> 5.594000 </td>
-   <td style="text-align:right;"> 0.60400 </td>
+   <td style="text-align:right;"> 5.924000 </td>
+   <td style="text-align:right;"> 0.831000 </td>
+   <td style="text-align:right;"> 5.89400 </td>
+   <td style="text-align:right;"> 0.93500 </td>
   </tr>
   <tr>
    <td style="text-align:left;"> GA </td>
    <td style="text-align:left;"> EI </td>
-   <td style="text-align:right;"> 5.90300 </td>
-   <td style="text-align:right;"> 0.634 </td>
-   <td style="text-align:right;"> 7.249000 </td>
-   <td style="text-align:right;"> 0.78500 </td>
+   <td style="text-align:right;"> 6.702000 </td>
+   <td style="text-align:right;"> 0.551000 </td>
+   <td style="text-align:right;"> 6.72500 </td>
+   <td style="text-align:right;"> 0.86000 </td>
   </tr>
   <tr>
    <td style="text-align:left;"> SA </td>
    <td style="text-align:left;"> EI </td>
-   <td style="text-align:right;"> 5.58500 </td>
-   <td style="text-align:right;"> 0.958 </td>
-   <td style="text-align:right;"> 7.314000 </td>
+   <td style="text-align:right;"> 5.892000 </td>
+   <td style="text-align:right;"> 0.642000 </td>
+   <td style="text-align:right;"> 7.31400 </td>
    <td style="text-align:right;"> 0.94100 </td>
   </tr>
   <tr>
    <td style="text-align:left;"> GA </td>
    <td style="text-align:left;"> SSWI </td>
-   <td style="text-align:right;"> 6.83800 </td>
-   <td style="text-align:right;"> 0.501 </td>
-   <td style="text-align:right;"> 6.582000 </td>
-   <td style="text-align:right;"> 0.71200 </td>
+   <td style="text-align:right;"> 6.381000 </td>
+   <td style="text-align:right;"> 0.617000 </td>
+   <td style="text-align:right;"> 6.58500 </td>
+   <td style="text-align:right;"> 0.67400 </td>
   </tr>
   <tr>
    <td style="text-align:left;"> SA </td>
    <td style="text-align:left;"> SSWI </td>
-   <td style="text-align:right;"> 6.00300 </td>
-   <td style="text-align:right;"> 0.659 </td>
-   <td style="text-align:right;"> 6.419000 </td>
-   <td style="text-align:right;"> 0.76800 </td>
+   <td style="text-align:right;"> 6.003000 </td>
+   <td style="text-align:right;"> 0.659000 </td>
+   <td style="text-align:right;"> 6.59400 </td>
+   <td style="text-align:right;"> 0.69300 </td>
   </tr>
   <tr>
    <td style="text-align:left;"> GA </td>
    <td style="text-align:left;"> GS </td>
-   <td style="text-align:right;"> 5.98800 </td>
-   <td style="text-align:right;"> 0.584 </td>
-   <td style="text-align:right;"> 7.183000 </td>
-   <td style="text-align:right;"> 0.58300 </td>
+   <td style="text-align:right;"> 6.005000 </td>
+   <td style="text-align:right;"> 0.711000 </td>
+   <td style="text-align:right;"> 6.51500 </td>
+   <td style="text-align:right;"> 0.73100 </td>
   </tr>
   <tr>
    <td style="text-align:left;"> SA </td>
    <td style="text-align:left;"> GS </td>
-   <td style="text-align:right;"> 5.66000 </td>
-   <td style="text-align:right;"> 0.905 </td>
-   <td style="text-align:right;"> 5.789000 </td>
+   <td style="text-align:right;"> 6.052000 </td>
+   <td style="text-align:right;"> 0.654000 </td>
+   <td style="text-align:right;"> 5.78900 </td>
    <td style="text-align:right;"> 0.71300 </td>
   </tr>
   <tr>
    <td style="text-align:left;"> Mean </td>
    <td style="text-align:left;"> NA </td>
-   <td style="text-align:right;"> 5.98775 </td>
-   <td style="text-align:right;"> 0.728 </td>
-   <td style="text-align:right;"> 6.504625 </td>
-   <td style="text-align:right;"> 0.74075 </td>
+   <td style="text-align:right;"> 6.142875 </td>
+   <td style="text-align:right;"> 0.650875 </td>
+   <td style="text-align:right;"> 6.41925 </td>
+   <td style="text-align:right;"> 0.78725 </td>
   </tr>
 </tbody>
 </table>
@@ -1291,58 +1374,27 @@ ggarrange(female, male, common.legend = TRUE,
           legend="bottom")
 ```
 
-<img src="index_files/figure-html/unnamed-chunk-25-1.jpeg" style="display: block; margin: auto;" />
+<img src="index_files/figure-html/unnamed-chunk-27-1.jpeg" style="display: block; margin: auto;" />
 
 
-### Method NO LINEAR MODEL 
+### Method Nonlinear Mixed-Effects Models
 
+Fit a nonlinear mixed-effects model (NLMM) to data, via maximum likelihood using `lme4` (@Bates2015) to calcularte parametrs
 
-We use firts a descomposition methot with library `mixR` and then we use `nlmer` (@Bates2015) to calcularte parametrs
+(work in progress)
 
 
 ```r
+#We use firts a descomposition methot with library `mixR` and the
+
 sf52020 <- sf5 %>% 
-  filter(sex_code %in% c("F", "M")) %>% 
+  filter(sex_code %in% "F",
+         ID == "EI",
+         Year =="2020") %>% 
   drop_na(length_total_cm)
 
-# Lista para almacenar los modelos
-modelos <- list()
-
-# Lista de estratos y sexos
-estratos <- unique(sf52020$ID)
-sexos <- unique(sf52020$sex_code)
-
-# Bucle para ajustar modelos para cada combinación de estrato y sexo
-for (estrato in estratos) {
-  for (sexo in sexos) {
-    # Filtrar los datos para el estrato y sexo actual
-    datos_subset <- sf52020%>% filter(ID == estrato, sex_code == sexo)
-    
-    # Aplicar mixfit y guardar el modelo en la lista
-    mod <- mixfit(datos_subset$length_total_cm, ncomp = 4,
-                   pi = c(0.5, 0.5, 0.5, 0.5), 
-                   mu = c(3, 4, 5, 6), 
-                   sd = c(0.2, 0.2, 0.2, 0.2))
-    
-    modelos[[paste(estrato, sexo, sep = "_")]] <- mod
-  }
-}
-
-# Puedes acceder a cada modelo usando modelos$nombre_del_estrato_y_sexo
-# Por ejemplo, para acceder al modelo para el estrato "A" y sexo "M":
-# modelos$A_M
-
-# compruebo el n de comp
-
-s_weibull = select(sf5a$length_total_cm, ncomp = 2:6, family = 'weibull')
-
-s_normal = select(sf5a$length_total_cm, ncomp = 2:6)
-
-
-
-
 # fit a Normal mixture model
-mod1 = mixfit(sf5a$length_total_cm, ncomp = 4,
+mod1 = mixfit(sf52020$length_total_cm, ncomp = 4,
               pi = c(0.5, 0.5, 0.5, 0.5), 
               mu = c( 3, 4, 5, 6), 
               sd = c(0.2, 0.2, 0.2, 0.2))
@@ -1392,7 +1444,7 @@ Mbs <- M_empirical(Linf = BS$Linf, K_l = BS$K,
                              "AlversonCarney",
                              "RikhterEfanov"
                              ))
-# GERLASHE
+# GERLACHE
 GS <- c(res_GAgs$par, list(agemax = res_GAgs$agemax))
 
 # use the function M_empirical to estimate natural mortality
@@ -1444,7 +1496,7 @@ Mbshe <- M_empirical(Linf = BShe$Linf, K_l = BShe$K,
                              "AlversonCarney",
                              "RikhterEfanov"
                              ))
-# GERLASHE
+# GERLACHE
 GShe <- c(res_GAgshe$par, list(agemax = res_GAgshe$agemax))
 
 # use the function M_empirical to estimate natural mortality
@@ -1512,38 +1564,38 @@ Total_M_Mean_male  %>%
 <tbody>
   <tr>
    <td style="text-align:left;"> Alverson and Carney (1975) </td>
-   <td style="text-align:right;"> 0.6840 </td>
-   <td style="text-align:right;"> 0.6560 </td>
-   <td style="text-align:right;"> 0.8630 </td>
-   <td style="text-align:right;"> 0.7450 </td>
+   <td style="text-align:right;"> 0.625 </td>
+   <td style="text-align:right;"> 0.7120 </td>
+   <td style="text-align:right;"> 0.729 </td>
+   <td style="text-align:right;"> 0.778 </td>
   </tr>
   <tr>
    <td style="text-align:left;"> Hoenig (1983) - Joint Equation </td>
+   <td style="text-align:right;"> 0.869 </td>
    <td style="text-align:right;"> 0.8690 </td>
-   <td style="text-align:right;"> 0.8690 </td>
-   <td style="text-align:right;"> 0.8690 </td>
-   <td style="text-align:right;"> 0.8690 </td>
+   <td style="text-align:right;"> 0.869 </td>
+   <td style="text-align:right;"> 0.869 </td>
   </tr>
   <tr>
    <td style="text-align:left;"> Hoenig (1983) - Fish Equation </td>
+   <td style="text-align:right;"> 0.847 </td>
    <td style="text-align:right;"> 0.8470 </td>
-   <td style="text-align:right;"> 0.8470 </td>
-   <td style="text-align:right;"> 0.8470 </td>
-   <td style="text-align:right;"> 0.8470 </td>
+   <td style="text-align:right;"> 0.847 </td>
+   <td style="text-align:right;"> 0.847 </td>
   </tr>
   <tr>
    <td style="text-align:left;"> Pauly (1980) - Length Equation </td>
-   <td style="text-align:right;"> 1.0200 </td>
-   <td style="text-align:right;"> 1.1110 </td>
-   <td style="text-align:right;"> 0.8420 </td>
-   <td style="text-align:right;"> 0.9830 </td>
+   <td style="text-align:right;"> 1.106 </td>
+   <td style="text-align:right;"> 1.0470 </td>
+   <td style="text-align:right;"> 1.002 </td>
+   <td style="text-align:right;"> 0.948 </td>
   </tr>
   <tr>
    <td style="text-align:left;"> Rikhter and Efanov (1976) </td>
+   <td style="text-align:right;"> 0.768 </td>
    <td style="text-align:right;"> 0.7680 </td>
-   <td style="text-align:right;"> 0.7680 </td>
-   <td style="text-align:right;"> 0.7680 </td>
-   <td style="text-align:right;"> 0.7680 </td>
+   <td style="text-align:right;"> 0.768 </td>
+   <td style="text-align:right;"> 0.768 </td>
   </tr>
   <tr>
    <td style="text-align:left;"> NA </td>
@@ -1554,10 +1606,10 @@ Total_M_Mean_male  %>%
   </tr>
   <tr>
    <td style="text-align:left;"> Mean </td>
-   <td style="text-align:right;"> 0.8376 </td>
-   <td style="text-align:right;"> 0.8502 </td>
-   <td style="text-align:right;"> 0.8378 </td>
-   <td style="text-align:right;"> 0.8424 </td>
+   <td style="text-align:right;"> 0.843 </td>
+   <td style="text-align:right;"> 0.8486 </td>
+   <td style="text-align:right;"> 0.843 </td>
+   <td style="text-align:right;"> 0.842 </td>
   </tr>
 </tbody>
 </table>
@@ -1586,45 +1638,45 @@ Total_M_Mean_femal  %>%
 <tbody>
   <tr>
    <td style="text-align:left;"> Alverson and Carney (1975) </td>
-   <td style="text-align:right;"> 0.8140 </td>
-   <td style="text-align:right;"> 0.711 </td>
-   <td style="text-align:right;"> 0.8620 </td>
-   <td style="text-align:right;"> 0.9450 </td>
+   <td style="text-align:right;"> 0.895 </td>
+   <td style="text-align:right;"> 0.9030 </td>
+   <td style="text-align:right;"> 0.7450 </td>
+   <td style="text-align:right;"> 0.8310 </td>
   </tr>
   <tr>
    <td style="text-align:left;"> Hoenig (1983) - Joint Equation </td>
-   <td style="text-align:right;"> 0.8690 </td>
    <td style="text-align:right;"> 0.869 </td>
+   <td style="text-align:right;"> 0.8690 </td>
    <td style="text-align:right;"> 0.8690 </td>
    <td style="text-align:right;"> 0.8690 </td>
   </tr>
   <tr>
    <td style="text-align:left;"> Hoenig (1983) - Fish Equation </td>
-   <td style="text-align:right;"> 0.8470 </td>
    <td style="text-align:right;"> 0.847 </td>
+   <td style="text-align:right;"> 0.8470 </td>
    <td style="text-align:right;"> 0.8470 </td>
    <td style="text-align:right;"> 0.8470 </td>
   </tr>
   <tr>
    <td style="text-align:left;"> Pauly (1980) - Length Equation </td>
-   <td style="text-align:right;"> 0.9390 </td>
-   <td style="text-align:right;"> 1.045 </td>
-   <td style="text-align:right;"> 0.8860 </td>
-   <td style="text-align:right;"> 0.7730 </td>
+   <td style="text-align:right;"> 0.826 </td>
+   <td style="text-align:right;"> 0.8360 </td>
+   <td style="text-align:right;"> 1.0080 </td>
+   <td style="text-align:right;"> 0.9020 </td>
   </tr>
   <tr>
    <td style="text-align:left;"> Rikhter and Efanov (1976) </td>
-   <td style="text-align:right;"> 0.7680 </td>
    <td style="text-align:right;"> 0.768 </td>
+   <td style="text-align:right;"> 0.7680 </td>
    <td style="text-align:right;"> 0.7680 </td>
    <td style="text-align:right;"> 0.7680 </td>
   </tr>
   <tr>
    <td style="text-align:left;"> Mean </td>
+   <td style="text-align:right;"> 0.841 </td>
+   <td style="text-align:right;"> 0.8446 </td>
    <td style="text-align:right;"> 0.8474 </td>
-   <td style="text-align:right;"> 0.848 </td>
-   <td style="text-align:right;"> 0.8464 </td>
-   <td style="text-align:right;"> 0.8404 </td>
+   <td style="text-align:right;"> 0.8434 </td>
   </tr>
 </tbody>
 </table>
@@ -1724,7 +1776,7 @@ ggarrange(m_female, m_male,
           legend="right")
 ```
 
-<img src="index_files/figure-html/unnamed-chunk-33-1.jpeg" style="display: block; margin: auto;" />
+<img src="index_files/figure-html/unnamed-chunk-35-1.jpeg" style="display: block; margin: auto;" />
 Statistical diferences in female
 
 
@@ -1736,8 +1788,8 @@ summary(anova_result)
 
 ```
 ##             Df  Sum Sq  Mean Sq F value Pr(>F)
-## Stratum      3 0.00063 0.000209   0.019  0.996
-## Residuals   20 0.21773 0.010887
+## Stratum      3 0.00016 0.000054   0.004      1
+## Residuals   20 0.25410 0.012705
 ```
 
 ```r
@@ -1785,55 +1837,55 @@ kbl(tukey_table,
    <td style="text-align:left;"> EI-BS </td>
    <td style="text-align:left;"> EI </td>
    <td style="text-align:left;"> BS </td>
-   <td style="text-align:right;"> -0.0126 </td>
-   <td style="text-align:right;"> 0.9966554 </td>
-   <td style="text-align:right;"> -0.1812089 </td>
-   <td style="text-align:right;"> 0.1560089 </td>
+   <td style="text-align:right;"> -0.0056 </td>
+   <td style="text-align:right;"> 0.9997634 </td>
+   <td style="text-align:right;"> -0.1877472 </td>
+   <td style="text-align:right;"> 0.1765472 </td>
   </tr>
   <tr>
    <td style="text-align:left;"> GS-BS </td>
    <td style="text-align:left;"> GS </td>
    <td style="text-align:left;"> BS </td>
-   <td style="text-align:right;"> -0.0124 </td>
-   <td style="text-align:right;"> 0.9968102 </td>
-   <td style="text-align:right;"> -0.1810089 </td>
-   <td style="text-align:right;"> 0.1562089 </td>
+   <td style="text-align:right;"> -0.0056 </td>
+   <td style="text-align:right;"> 0.9997634 </td>
+   <td style="text-align:right;"> -0.1877472 </td>
+   <td style="text-align:right;"> 0.1765472 </td>
   </tr>
   <tr>
    <td style="text-align:left;"> SSWI-BS </td>
    <td style="text-align:left;"> SSWI </td>
    <td style="text-align:left;"> BS </td>
-   <td style="text-align:right;"> -0.0078 </td>
-   <td style="text-align:right;"> 0.9991973 </td>
-   <td style="text-align:right;"> -0.1764089 </td>
-   <td style="text-align:right;"> 0.1608089 </td>
+   <td style="text-align:right;"> -0.0066 </td>
+   <td style="text-align:right;"> 0.9996132 </td>
+   <td style="text-align:right;"> -0.1887472 </td>
+   <td style="text-align:right;"> 0.1755472 </td>
   </tr>
   <tr>
    <td style="text-align:left;"> GS-EI </td>
    <td style="text-align:left;"> GS </td>
    <td style="text-align:left;"> EI </td>
-   <td style="text-align:right;"> 0.0002 </td>
+   <td style="text-align:right;"> 0.0000 </td>
    <td style="text-align:right;"> 1.0000000 </td>
-   <td style="text-align:right;"> -0.1684089 </td>
-   <td style="text-align:right;"> 0.1688089 </td>
+   <td style="text-align:right;"> -0.1821472 </td>
+   <td style="text-align:right;"> 0.1821472 </td>
   </tr>
   <tr>
    <td style="text-align:left;"> SSWI-EI </td>
    <td style="text-align:left;"> SSWI </td>
    <td style="text-align:left;"> EI </td>
-   <td style="text-align:right;"> 0.0048 </td>
-   <td style="text-align:right;"> 0.9998121 </td>
-   <td style="text-align:right;"> -0.1638089 </td>
-   <td style="text-align:right;"> 0.1734089 </td>
+   <td style="text-align:right;"> -0.0010 </td>
+   <td style="text-align:right;"> 0.9999986 </td>
+   <td style="text-align:right;"> -0.1831472 </td>
+   <td style="text-align:right;"> 0.1811472 </td>
   </tr>
   <tr>
    <td style="text-align:left;"> SSWI-GS </td>
    <td style="text-align:left;"> SSWI </td>
    <td style="text-align:left;"> GS </td>
-   <td style="text-align:right;"> 0.0046 </td>
-   <td style="text-align:right;"> 0.9998346 </td>
-   <td style="text-align:right;"> -0.1640089 </td>
-   <td style="text-align:right;"> 0.1732089 </td>
+   <td style="text-align:right;"> -0.0010 </td>
+   <td style="text-align:right;"> 0.9999986 </td>
+   <td style="text-align:right;"> -0.1831472 </td>
+   <td style="text-align:right;"> 0.1811472 </td>
   </tr>
 </tbody>
 </table>
@@ -1848,8 +1900,8 @@ summary(anova_result_ma)
 
 ```
 ##             Df  Sum Sq  Mean Sq F value Pr(>F)
-## Stratum      3 0.00022 0.000073   0.013  0.998
-## Residuals   20 0.11075 0.005538
+## Stratum      3 0.00013 0.000042   0.012  0.998
+## Residuals   20 0.07223 0.003612
 ```
 
 ```r
@@ -1871,7 +1923,7 @@ tukey_table_ma <- tukey_df_ma %>%
          Upper_CI = `upr`)
 
 
-kbl(tukey_table_ma, 
+kbl(tukey_table, 
     caption = "Test to differences between strata")  |> 
   kable_classic(full_width = F, 
                 html_font = "Cambria") |> 
@@ -1897,55 +1949,55 @@ kbl(tukey_table_ma,
    <td style="text-align:left;"> EI-BS </td>
    <td style="text-align:left;"> EI </td>
    <td style="text-align:left;"> BS </td>
-   <td style="text-align:right;"> -0.0006 </td>
-   <td style="text-align:right;"> 0.9999990 </td>
-   <td style="text-align:right;"> -0.1208531 </td>
-   <td style="text-align:right;"> 0.1196531 </td>
+   <td style="text-align:right;"> -0.0056 </td>
+   <td style="text-align:right;"> 0.9997634 </td>
+   <td style="text-align:right;"> -0.1877472 </td>
+   <td style="text-align:right;"> 0.1765472 </td>
   </tr>
   <tr>
    <td style="text-align:left;"> GS-BS </td>
    <td style="text-align:left;"> GS </td>
    <td style="text-align:left;"> BS </td>
-   <td style="text-align:right;"> -0.0016 </td>
-   <td style="text-align:right;"> 0.9999808 </td>
-   <td style="text-align:right;"> -0.1218531 </td>
-   <td style="text-align:right;"> 0.1186531 </td>
+   <td style="text-align:right;"> -0.0056 </td>
+   <td style="text-align:right;"> 0.9997634 </td>
+   <td style="text-align:right;"> -0.1877472 </td>
+   <td style="text-align:right;"> 0.1765472 </td>
   </tr>
   <tr>
    <td style="text-align:left;"> SSWI-BS </td>
    <td style="text-align:left;"> SSWI </td>
    <td style="text-align:left;"> BS </td>
-   <td style="text-align:right;"> -0.0076 </td>
-   <td style="text-align:right;"> 0.9979660 </td>
-   <td style="text-align:right;"> -0.1278531 </td>
-   <td style="text-align:right;"> 0.1126531 </td>
+   <td style="text-align:right;"> -0.0066 </td>
+   <td style="text-align:right;"> 0.9996132 </td>
+   <td style="text-align:right;"> -0.1887472 </td>
+   <td style="text-align:right;"> 0.1755472 </td>
   </tr>
   <tr>
    <td style="text-align:left;"> GS-EI </td>
    <td style="text-align:left;"> GS </td>
    <td style="text-align:left;"> EI </td>
-   <td style="text-align:right;"> -0.0010 </td>
-   <td style="text-align:right;"> 0.9999953 </td>
-   <td style="text-align:right;"> -0.1212531 </td>
-   <td style="text-align:right;"> 0.1192531 </td>
+   <td style="text-align:right;"> 0.0000 </td>
+   <td style="text-align:right;"> 1.0000000 </td>
+   <td style="text-align:right;"> -0.1821472 </td>
+   <td style="text-align:right;"> 0.1821472 </td>
   </tr>
   <tr>
    <td style="text-align:left;"> SSWI-EI </td>
    <td style="text-align:left;"> SSWI </td>
    <td style="text-align:left;"> EI </td>
-   <td style="text-align:right;"> -0.0070 </td>
-   <td style="text-align:right;"> 0.9984075 </td>
-   <td style="text-align:right;"> -0.1272531 </td>
-   <td style="text-align:right;"> 0.1132531 </td>
+   <td style="text-align:right;"> -0.0010 </td>
+   <td style="text-align:right;"> 0.9999986 </td>
+   <td style="text-align:right;"> -0.1831472 </td>
+   <td style="text-align:right;"> 0.1811472 </td>
   </tr>
   <tr>
    <td style="text-align:left;"> SSWI-GS </td>
    <td style="text-align:left;"> SSWI </td>
    <td style="text-align:left;"> GS </td>
-   <td style="text-align:right;"> -0.0060 </td>
-   <td style="text-align:right;"> 0.9989941 </td>
-   <td style="text-align:right;"> -0.1262531 </td>
-   <td style="text-align:right;"> 0.1142531 </td>
+   <td style="text-align:right;"> -0.0010 </td>
+   <td style="text-align:right;"> 0.9999986 </td>
+   <td style="text-align:right;"> -0.1831472 </td>
+   <td style="text-align:right;"> 0.1811472 </td>
   </tr>
 </tbody>
 </table>

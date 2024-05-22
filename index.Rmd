@@ -193,7 +193,7 @@ histogram length data to viz in anthor way.
 
 ```{r warning=FALSE}
 jzstrata <- ggplot(sf4 %>% 
-                     mutate(ID = if_else(ID == "Extra", "GERLASHE", ID)) %>% 
+                     mutate(ID = if_else(ID == "Extra", "GERLACHE", ID)) %>% 
                filter(Year>2010,
                       ID !="Outer"),
              aes(x=length_total_cm, 
@@ -227,7 +227,7 @@ sf5 <- sf4 |>
         "Month",
         "sex_code",
          "greenweight_kg")) |> 
-  mutate(ID = if_else(ID == "Extra", "GERLASHE", ID)) |>  
+  mutate(ID = if_else(ID == "Extra", "GERLACHE", ID)) |>  
   filter(ID !="Outer") |> 
   data.frame()
 ```
@@ -266,14 +266,14 @@ kbl(tabla_proporcion,
 #MALE
 
 sf5fil <- sf5 |>
-  filter(ID %in% c("BS", "EI", "GERLASHE", "SSIW"),
+  filter(ID %in% c("BS", "EI", "GERLACHE", "SSIW"),
          sex_code %in% "M") |>  
   mutate(date_catchperiod_start = as.Date(date_catchperiod_start)) |>  
   mutate(yearly_Group = floor_date(date_catchperiod_start, "year")) |>   # New column
   drop_na(length_total_cm) 
 
 # Definir los nombres correspondientes a cada objeto lfq_results
-nombres <- c("SSI", "BS", "GERLASHE", "EI")
+nombres <- c("SSI", "BS", "GERLACHE", "EI")
 # Crear una lista para almacenar los resultados de cada ID
 lfq_results <- list()
 # Iterar sobre cada ID
@@ -297,14 +297,14 @@ for (id in unique(sf5fil$ID)) {
 #FEMALE
 
 sf5filhe <- sf5 |>
-  filter(ID %in% c("BS", "EI", "GERLASHE", "SSIW"),
+  filter(ID %in% c("BS", "EI", "GERLACHE", "SSIW"),
          sex_code %in% "F") |>  
   mutate(date_catchperiod_start = as.Date(date_catchperiod_start)) |>  
   mutate(yearly_Group = floor_date(date_catchperiod_start, "year")) |>   # New column
   drop_na(length_total_cm) 
 
 # Definir los nombres correspondientes a cada objeto lfq_results
-nombres <- c("SSI", "BS", "GERLASHE", "EI")
+nombres <- c("SSI", "BS", "GERLACHE", "EI")
 # Crear una lista para almacenar los resultados de cada ID
 lfq_resultshe <- list()
 # Iterar sobre cada ID
@@ -344,7 +344,7 @@ Bhattacharya(lfq_results$BS)
 
 
 ```{r message=FALSE}
-Bhattacharya(lfq_results$GERLASHE)
+Bhattacharya(lfq_results$GERLACHE)
 ```
 
 now we assign objet to male `lfq_result` and female `lfq_resulthe` and plot with `lfqRestructure()`
@@ -354,7 +354,7 @@ Male
 
 ```{r}
 # Definir los nombres correspondientes a cada objeto lfq_results
-nombres <- c("SSI", "BS", "GERLASHE", "EI")
+nombres <- c("SSI", "BS", "GERLACHE", "EI")
 # Iterar sobre cada objeto lfq almacenado en lfq_results
 for (i in seq_along(lfq_results)) {
   lfq <- lfq_results[[i]]
@@ -382,7 +382,7 @@ Female
 # Crear una lista para almacenar los resultados de PW_results <- list()
 
 # Definir los nombres correspondientes a cada objeto lfq_results
-nombres <- c("SSI", "BS", "GERLASHE", "EI")
+nombres <- c("SSI", "BS", "GERLACHE", "EI")
 
 # Iterar sobre cada objeto lfq almacenado en lfq_results
 for (i in seq_along(lfq_resultshe)) {
@@ -434,7 +434,7 @@ for (id in unique_ids) {
 
 # select number of components
 
-s_normalgs = select(obj_id$GERLASHE$length_total_cm, ncomp = 2:6)
+s_normalgs = select(obj_id$GERLACHE$length_total_cm, ncomp = 2:6)
 plot(s_normalgs)
 s_normalei = select(obj_id$EI$length_total_cm, ncomp = 2:6)
 plot(s_normalei)
@@ -444,7 +444,7 @@ s_normalsswi = select(obj_id$SSWI$length_total_cm, ncomp = 2:6)
 plot(s_normalsswi)
 
 # fit a Normal mixture model
-modgs = mixfit(obj_id$GERLASHE$length_total_cm, ncomp = 3,
+modgs = mixfit(obj_id$GERLACHE$length_total_cm, ncomp = 3,
               pi = c(0.5, 0.5, 0.5), 
               mu = c( 3, 4, 5), 
               sd = c(0.2, 0.2, 0.2))
@@ -475,7 +475,7 @@ modsswi = mixfit(obj_id$SSIW$length_total_cm, ncomp = 4,
 ```{r, eval=FALSE, fig.width=8, fig.height=5}
 GSplot <- plot(modgs,
      theme = "bw",
-     title ="GERLASHE")
+     title ="GERLACHE")
 EIplot <- plot(modei,
      theme = "bw",
      title ="ELEFANT ISLAND")
@@ -622,10 +622,10 @@ res_GAbs <- ELEFAN_GA(lfq_results$BS,
                     monitor = FALSE)
 
 
-#### Parameters to `GERLASHE`
+#### Parameters to `GERLACHE`
 
 # run ELEFAN with simulated annealing
-res_SAgs <- ELEFAN_SA(lfq_results$GERLASHE, 
+res_SAgs <- ELEFAN_SA(lfq_results$GERLACHE, 
                     SA_time = 60*0.5, 
                     MA = 5, 
                     agemax = 5,
@@ -646,7 +646,7 @@ res_SAgs <- ELEFAN_SA(lfq_results$GERLASHE,
                                   C = 1, ts = 1))
 
 # run ELEFAN with genetic algorithm
-res_GAgs <- ELEFAN_GA(lfq_results$GERLASHE, 
+res_GAgs <- ELEFAN_GA(lfq_results$GERLACHE, 
                     MA = 5, 
                     seasonalised = TRUE, 
                     maxiter = 10, 
@@ -794,11 +794,11 @@ res_GAbshe <- ELEFAN_GA(lfq_resultshe$BS,
                     monitor = FALSE)
 
 
-#### Parameters to `GERLASHE`
+#### Parameters to `GERLACHE`
 
 
 # run ELEFAN with simulated annealing
-res_SAgshe <- ELEFAN_SA(lfq_resultshe$GERLASHE, 
+res_SAgshe <- ELEFAN_SA(lfq_resultshe$GERLACHE, 
                     SA_time = 60*0.5, 
                     MA = 5, 
                     agemax = 5,
@@ -819,7 +819,7 @@ res_SAgshe <- ELEFAN_SA(lfq_resultshe$GERLASHE,
                                   C = 1, ts = 1))
 
 # run ELEFAN with genetic algorithm
-res_GAgshe <- ELEFAN_GA(lfq_resultshe$GERLASHE, 
+res_GAgshe <- ELEFAN_GA(lfq_resultshe$GERLACHE, 
                     MA = 5, 
                     seasonalised = TRUE, 
                     maxiter = 10, 
@@ -1066,7 +1066,7 @@ Mbs <- M_empirical(Linf = BS$Linf, K_l = BS$K,
                              "AlversonCarney",
                              "RikhterEfanov"
                              ))
-# GERLASHE
+# GERLACHE
 GS <- c(res_GAgs$par, list(agemax = res_GAgs$agemax))
 
 # use the function M_empirical to estimate natural mortality
@@ -1117,7 +1117,7 @@ Mbshe <- M_empirical(Linf = BShe$Linf, K_l = BShe$K,
                              "AlversonCarney",
                              "RikhterEfanov"
                              ))
-# GERLASHE
+# GERLACHE
 GShe <- c(res_GAgshe$par, list(agemax = res_GAgshe$agemax))
 
 # use the function M_empirical to estimate natural mortality
