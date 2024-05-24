@@ -29,6 +29,7 @@ editor_options:
 
 ```{r setup1}
 rm(list = ls())
+set.seed(9)
 knitr::opts_chunk$set(echo = TRUE,
                       message = FALSE,
                       warning = FALSE,
@@ -478,7 +479,7 @@ GSplot <- plot(modgs,
      title ="GERLACHE")
 EIplot <- plot(modei,
      theme = "bw",
-     title ="ELEFANT ISLAND")
+     title ="ELEPHANT ISLAND")
 BSplot <- plot(modbs,
      theme = "bw",
      title ="BRANSFIELD STRAIT")
@@ -958,7 +959,7 @@ male <- ggplot(df_curves_male,
        y = "Length (cm)") +
   theme_few()+
   facet_wrap(.~METHOD)+
-  scale_colour_viridis_d(option="H",
+  scale_colour_viridis_d(option="F",
                          name="Strata")
 
 ```
@@ -985,7 +986,7 @@ female <- ggplot(df_curves_female,
        y = "Length (cm)") +
   theme_few()+
   facet_wrap(.~METHOD)+
-  scale_colour_viridis_d(option="H",
+  scale_colour_viridis_d(option="F",
                          name="Strata")
 
 ```
