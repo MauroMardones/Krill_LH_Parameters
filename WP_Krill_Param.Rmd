@@ -8,7 +8,7 @@ author:
   - Francisco Santa Cruz ^[Instituto Antártico Chileno, Universidad de Magallanes]
 date:  "`r format(Sys.time(), '%d %B, %Y')`"
 output:
-  bookdown::word_document2:
+  bookdown::pdf_document2:
     number_sections: false
 fig_caption: yes
 bibliography: param.bib
@@ -62,7 +62,7 @@ library(ggthemes)
 
 # ABSTRACT
 
-The Western Antarctic Peninsula ecosystem plays a critical role in the life of Antarctic krill (*Euphausia superba*). Recent environmental changes and escalating exploitation in this area have led to alterations in krill population structure, calling for a review of the management approach. In this study, we derive growth parameters and natural mortality rates for krill while considering spatial heterogeneity in the Western Antarctic Peninsula. We use Modal Progression Analysis (MPA) to estimate \(L_\infty\) and \(K\) for each management stratum inside subarea 48.1. Subsequently, we calculate natural mortality for each stratum using bioanalytical  methods. Our results reveal differences in life history parameters that could be discussed in management and advice when model based approximations about dynamics population of krill is analyzed. This study underscores the importance of accounting for spatial heterogeneity in estimating krill life cycle parameters, which can significantly impact assessment models used to provide management recommendations to CCAMLR.
+The Western Antarctic Peninsula ecosystem plays a critical role in the life of Antarctic krill (*Euphausia superba*). Recent environmental changes and escalating exploitation in this area have led to alterations in krill population structure, calling for a review of the management approach. In this study, we derive growth parameters and natural mortality rates for krill while considering spatial heterogeneity in the Western Antarctic Peninsula. We use Modal Progression Analysis (MPA) to estimate \(L_\infty\) and \(K\) for each management stratum inside subarea 48.1. Subsequently, we calculate natural mortality \(M\) for each stratum using bioanalytical methods. This study identified variations in krill's life history traits across different locations. These findings can be incorporated into management strategies and recommendations when analyzing population dynamics models for krill. This study underscores the importance of accounting for spatial heterogeneity in estimating krill life cycle parameters, which can significantly impact assessment models used to provide management recommendations to CCAMLR.
 
 
 
@@ -159,10 +159,10 @@ All these methods, this mean growth parameters estimation and bioanalytical mode
 
 # RESULTS
 
-Figure \@ref(fig:comps) shows the distribution of krill size by age group for four different strata using `mixR`. We found different modal compositions by strata, that was included in estimation parameters models.: GERLACHE, ELEPHANT ISLAND, BRANSFIELD STRAIT, and SSWI by panel. The x-axis of each panel shows the krill size in millimeters, and the y-axis shows the probability density. The panels show the distribution by age group in different colors. Younger krill are generally smaller than older krill. The distribution of krill size also varies by strata. For example, the krill in GERLACHE tend to be larger than the krill in SSWI. 
+Figure \@ref(fig:comps) shows the distribution of krill size by age group for four different strata using `mixR`. We found different modal compositions by strata, that was included in estimation parameters models.: GERLACHE, ELEPHANT ISLAND, BRANSFIELD STRAIT, and SSWI by panel. The x-axis of each panel shows the krill size in millimeters, and the y-axis shows the probability density. The panels show the distribution by age group in different colors for male (Figure \@ref(fig:cohortmale), \@ref(fig:incremale)) and female (Figure \@ref(fig:cohortfemale), \@ref(fig:incremfemale)). Younger krill are generally smaller than older krill. The distribution of krill size also varies by strata. For example, the krill in GERLACHE tend to be larger than the krill in SSWI. 
 
 
-The Table \@ref(fig:tablegp) presents life history parameters for krill across different strata using two estimation algorithms, Genetic Algoritm and Simulated Annealing.  For the BS stratum, the GA algorithm estimates \( L_\infty \) for females at 6.603 and \( K\) at 0.385, while for males, \( L_\infty \) is 6.026 and \( K\) is 0.686. The SA algorithm provides slightly different values: \( L_\infty \) for females is 5.924 and \( K\) is 0.831, whereas \( L_\infty \) for males is 5.594 and \( K\) is 0.604. In the EI stratum, the GA algorithm estimates \( L_\infty \) for females at 5.945 and \( K\) at 0.616, with male estimates being \( L_\infty \) of 6.902 and \( K\) of 0.799. The SA algorithm shows higher variability, with \( L_\infty \) for females at 5.585 and \( K\) at 0.958, and for males, \( L_\infty \) at 7.314 and \( K\) at 0.941. For the SSWI stratum, the GA algorithm results in \( L_\infty \) for females at 6.606 and \( K\) at 0.523, while males have \( L_\infty \) at 6.470 and \( K\) at 0.646. The SA algorithm estimates \( L_\infty \) for females at 6.003 and \( K\) at 0.659, and for males, \( L_\infty \) at 6.419 and \( K\) at 0.768. In the GS stratum, the GA algorithm provides \( L_\infty \) for females at 6.011 and \( K\) at 0.692, with male estimates of \( L_\infty \) at 6.441 and \( K\) at 0.871. The SA algorithm estimates \( L_\infty \) for females at 5.660 and \( K\) at 0.905, and for males, \( L_\infty \) at 5.789 and \( K\) at 0.713. The mean estimates across all strata for both algorithms are \( L_\infty \) for females at 6.042125 and \( K\) at 0.696125, while for males, \( L_\infty \) is 6.369375 and \( K\) is 0.7535 (Figure \@ref(fig:tablegp)).
+The Table \@ref(fig:tablegp) presents life history parameters for krill across different strata using two estimation algorithms, Genetic Algoritm and Simulated Annealing.  For the BS stratum, the GA algorithm estimates \( L_\infty \) for females at 6.603 and \( K\) at 0.385, while for males, \( L_\infty \) is 6.026 and \( K\) is 0.686. The SA algorithm provides slightly different values: \( L_\infty \) for females is 5.924 and \( K\) is 0.831, whereas \( L_\infty \) for males is 5.594 and \( K\) is 0.604. In the EI stratum, the GA algorithm estimates \( L_\infty \) for females at 5.945 and \( K\) at 0.616, with male estimates being \( L_\infty \) of 6.902 and \( K\) of 0.799. The SA algorithm shows higher variability, with \( L_\infty \) for females at 5.585 and \( K\) at 0.958, and for males, \( L_\infty \) at 7.314 and \( K\) at 0.941. For the SSWI stratum, the GA algorithm results in \( L_\infty \) for females at 6.606 and \( K\) at 0.523, while males have \( L_\infty \) at 6.470 and \( K\) at 0.646. The SA algorithm estimates \( L_\infty \) for females at 6.003 and \( K\) at 0.659, and for males, \( L_\infty \) at 6.419 and \( K\) at 0.768. In the GS stratum, the GA algorithm provides \( L_\infty \) for females at 6.011 and \( K\) at 0.692, with male estimates of \( L_\infty \) at 6.441 and \( K\) at 0.871. The SA algorithm estimates \( L_\infty \) for females at 5.660 and \( K\) at 0.905, and for males, \( L_\infty \) at 5.789 and \( K\) at 0.713. The mean estimates across all strata for both algorithms are \( L_\infty \) for females at 6.042125 and \( K\) at 0.696125, while for males, \( L_\infty \) is 6.369375 and \( K\) is 0.7535. Growth curve regarding parametres estimated is show in Figure \@ref(fig:curvevb).
 
 
 
@@ -253,7 +253,7 @@ knitr::include_graphics(c('index_files/figure-html/unnamed-chunk-13-1.jpeg',
 
 
 
-```{r tablegp,  out.width='80%', fig.show='hold', fig.cap="Table with von Bertalanffy parameters by sex, strata and method"}
+```{r tablegp,  out.width='60%', fig.show='hold', fig.cap="von Bertalanffy parameters estimated  by sex, strata and method"}
 knitr::include_graphics('index_files/figure-html/result_GrowthParam.png')
 ```
 

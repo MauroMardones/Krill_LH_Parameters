@@ -2,7 +2,7 @@
 title: "Derive growth parameters and natural mortality rates for krill while accounting for spatial heterogeneity in the Western Antarctic Peninsula."
 subtitle: "Working Paper to be submitted in a CCAMLR EMM-WG 2024"
 author: "Mardones, M; Cárdenas, C., Krüger, L., Santa Cruz, F."
-date:  "24 May, 2024"
+date:  "27 May, 2024"
 bibliography: param.bib
 csl: apa.csl
 link-citations: yes
@@ -199,6 +199,11 @@ sf4 <- st_join(strata, ohbio6)
 saveRDS(sf4, file = "sf4.rds")
 ```
 
+
+
+
+## Data
+
 Load RData
 
 ```r
@@ -215,10 +220,6 @@ plot(TukeyHSD(m))
 ```
 
 <img src="index_files/figure-html/unnamed-chunk-6-1.jpeg" style="display: block; margin: auto;" />
-
-
-## Data
-
 histogram length data to viz in anthor way.
 
 
@@ -649,12 +650,12 @@ res_SAsswi <- ELEFAN_SA(lfq_results$SSIW,
 ```
 ## Simulated annealing is running. 
 ## This will take approximately 0.5 minutes.
-## timeSpan = 30.001717 maxTime = 30
-## Emini is: -0.2570441366
+## timeSpan = 30.0122 maxTime = 30
+## Emini is: -0.2717015803
 ## xmini are:
-## 6.418895303 0.7678352515 0.5033732662 0.490536049 0.8187059425 
-## Totally it used 30.001737 secs
-## No. of function call is: 1129
+## 6.593828037 0.693300965 0.4647053033 0.7490957195 0.8974912463 
+## Totally it used 30.012212 secs
+## No. of function call is: 1709
 ```
 
 ```r
@@ -711,12 +712,12 @@ res_SAei <- ELEFAN_SA(lfq_results$EI,
 ```
 ## Simulated annealing is running. 
 ## This will take approximately 0.5 minutes.
-## timeSpan = 30.003961 maxTime = 30
+## timeSpan = 30.012513 maxTime = 30
 ## Emini is: -0.2367092272
 ## xmini are:
 ## 7.314306291 0.9412915653 0.6182883382 0.7314349413 0.4690019973 
-## Totally it used 30.00398 secs
-## No. of function call is: 1338
+## Totally it used 30.01253 secs
+## No. of function call is: 2142
 ```
 
 ```r
@@ -773,12 +774,12 @@ res_SAbs <- ELEFAN_SA(lfq_results$BS,
 ```
 ## Simulated annealing is running. 
 ## This will take approximately 0.5 minutes.
-## timeSpan = 30.008559 maxTime = 30
-## Emini is: -0.3182638225
+## timeSpan = 30.005115 maxTime = 30
+## Emini is: -0.415276945
 ## xmini are:
-## 5.593892905 0.604283656 0.1065582037 0.643085584 0.9565868378 
-## Totally it used 30.00858 secs
-## No. of function call is: 1210
+## 5.894466101 0.9346580543 0.9088346824 0.4661808193 0.3456628323 
+## Totally it used 30.005128 secs
+## No. of function call is: 1868
 ```
 
 ```r
@@ -835,12 +836,12 @@ res_SAgs <- ELEFAN_SA(lfq_results$GERLACHE,
 ```
 ## Simulated annealing is running. 
 ## This will take approximately 0.5 minutes.
-## timeSpan = 30.001215 maxTime = 30
+## timeSpan = 30.005304 maxTime = 30
 ## Emini is: -0.2869010907
 ## xmini are:
 ## 5.789427124 0.7127949446 0.4013525844 0.5469309241 0.1102455743 
-## Totally it used 30.001234 secs
-## No. of function call is: 1600
+## Totally it used 30.005317 secs
+## No. of function call is: 2672
 ```
 
 ```r
@@ -868,9 +869,8 @@ res_GAgs <- ELEFAN_GA(lfq_results$GERLACHE,
 ```
 
 <img src="index_files/figure-html/unnamed-chunk-19-4.jpeg" style="display: block; margin: auto;" />
+
 #### Krill Female
-
-
 
 ```r
 #### Parameters to `SSWI`
@@ -900,12 +900,12 @@ res_SAsswihe <- ELEFAN_SA(lfq_resultshe$SSIW,
 ```
 ## Simulated annealing is running. 
 ## This will take approximately 0.5 minutes.
-## timeSpan = 30.016656 maxTime = 30
+## timeSpan = 30.04434 maxTime = 30
 ## Emini is: -0.2316358367
 ## xmini are:
 ## 6.003211424 0.6594774183 0.1511300988 0.1896827698 0.9636289105 
-## Totally it used 30.016675 secs
-## No. of function call is: 1157
+## Totally it used 30.044356 secs
+## No. of function call is: 1843
 ```
 
 ```r
@@ -962,12 +962,12 @@ res_SAeihe <- ELEFAN_SA(lfq_resultshe$EI,
 ```
 ## Simulated annealing is running. 
 ## This will take approximately 0.5 minutes.
-## timeSpan = 30.070971 maxTime = 30
-## Emini is: -0.2964366709
+## timeSpan = 30.001721 maxTime = 30
+## Emini is: -0.3102707119
 ## xmini are:
-## 5.585338324 0.9580215203 0.2021615843 0.7399474084 0.666007027 
-## Totally it used 30.07099 secs
-## No. of function call is: 1361
+## 5.891642671 0.6415225773 0.6244705464 0.6804234903 0.7977122728 
+## Totally it used 30.001732 secs
+## No. of function call is: 2103
 ```
 
 ```r
@@ -1025,12 +1025,12 @@ res_SAbshe <- ELEFAN_SA(lfq_resultshe$BS,
 ```
 ## Simulated annealing is running. 
 ## This will take approximately 0.5 minutes.
-## timeSpan = 30.011616 maxTime = 30
+## timeSpan = 30.012529 maxTime = 30
 ## Emini is: -0.4349139705
 ## xmini are:
 ## 5.923948187 0.8310357623 0.5259462683 0.3320332617 0.281676233 
-## Totally it used 30.011635 secs
-## No. of function call is: 1228
+## Totally it used 30.012542 secs
+## No. of function call is: 1671
 ```
 
 ```r
@@ -1088,12 +1088,12 @@ res_SAgshe <- ELEFAN_SA(lfq_resultshe$GERLACHE,
 ```
 ## Simulated annealing is running. 
 ## This will take approximately 0.5 minutes.
-## timeSpan = 30.015046 maxTime = 30
-## Emini is: -0.3825402709
+## timeSpan = 30.001568 maxTime = 30
+## Emini is: -0.3921830599
 ## xmini are:
-## 5.659959408 0.9045192397 0.9905485124 0.03362630308 0.549246957 
-## Totally it used 30.015066 secs
-## No. of function call is: 1610
+## 6.05175862 0.6535953842 0.2468843122 0.4196294853 0.2307560779 
+## Totally it used 30.001579 secs
+## No. of function call is: 2554
 ```
 
 ```r
@@ -1219,74 +1219,74 @@ t_k_linf %>%
   <tr>
    <td style="text-align:left;"> GA </td>
    <td style="text-align:left;"> BS </td>
-   <td style="text-align:right;"> 6.603000 </td>
-   <td style="text-align:right;"> 0.385000 </td>
-   <td style="text-align:right;"> 6.026000 </td>
+   <td style="text-align:right;"> 6.6030 </td>
+   <td style="text-align:right;"> 0.38500 </td>
+   <td style="text-align:right;"> 6.02600 </td>
    <td style="text-align:right;"> 0.6860 </td>
   </tr>
   <tr>
    <td style="text-align:left;"> SA </td>
    <td style="text-align:left;"> BS </td>
-   <td style="text-align:right;"> 5.924000 </td>
-   <td style="text-align:right;"> 0.831000 </td>
-   <td style="text-align:right;"> 5.594000 </td>
-   <td style="text-align:right;"> 0.6040 </td>
+   <td style="text-align:right;"> 5.9240 </td>
+   <td style="text-align:right;"> 0.83100 </td>
+   <td style="text-align:right;"> 5.89400 </td>
+   <td style="text-align:right;"> 0.9350 </td>
   </tr>
   <tr>
    <td style="text-align:left;"> GA </td>
    <td style="text-align:left;"> EI </td>
-   <td style="text-align:right;"> 5.945000 </td>
-   <td style="text-align:right;"> 0.616000 </td>
-   <td style="text-align:right;"> 6.902000 </td>
+   <td style="text-align:right;"> 5.9450 </td>
+   <td style="text-align:right;"> 0.61600 </td>
+   <td style="text-align:right;"> 6.90200 </td>
    <td style="text-align:right;"> 0.7990 </td>
   </tr>
   <tr>
    <td style="text-align:left;"> SA </td>
    <td style="text-align:left;"> EI </td>
-   <td style="text-align:right;"> 5.585000 </td>
-   <td style="text-align:right;"> 0.958000 </td>
-   <td style="text-align:right;"> 7.314000 </td>
+   <td style="text-align:right;"> 5.8920 </td>
+   <td style="text-align:right;"> 0.64200 </td>
+   <td style="text-align:right;"> 7.31400 </td>
    <td style="text-align:right;"> 0.9410 </td>
   </tr>
   <tr>
    <td style="text-align:left;"> GA </td>
    <td style="text-align:left;"> SSWI </td>
-   <td style="text-align:right;"> 6.606000 </td>
-   <td style="text-align:right;"> 0.523000 </td>
-   <td style="text-align:right;"> 6.470000 </td>
+   <td style="text-align:right;"> 6.6060 </td>
+   <td style="text-align:right;"> 0.52300 </td>
+   <td style="text-align:right;"> 6.47000 </td>
    <td style="text-align:right;"> 0.6460 </td>
   </tr>
   <tr>
    <td style="text-align:left;"> SA </td>
    <td style="text-align:left;"> SSWI </td>
-   <td style="text-align:right;"> 6.003000 </td>
-   <td style="text-align:right;"> 0.659000 </td>
-   <td style="text-align:right;"> 6.419000 </td>
-   <td style="text-align:right;"> 0.7680 </td>
+   <td style="text-align:right;"> 6.0030 </td>
+   <td style="text-align:right;"> 0.65900 </td>
+   <td style="text-align:right;"> 6.59400 </td>
+   <td style="text-align:right;"> 0.6930 </td>
   </tr>
   <tr>
    <td style="text-align:left;"> GA </td>
    <td style="text-align:left;"> GS </td>
-   <td style="text-align:right;"> 6.011000 </td>
-   <td style="text-align:right;"> 0.692000 </td>
-   <td style="text-align:right;"> 6.441000 </td>
+   <td style="text-align:right;"> 6.0110 </td>
+   <td style="text-align:right;"> 0.69200 </td>
+   <td style="text-align:right;"> 6.44100 </td>
    <td style="text-align:right;"> 0.8710 </td>
   </tr>
   <tr>
    <td style="text-align:left;"> SA </td>
    <td style="text-align:left;"> GS </td>
-   <td style="text-align:right;"> 5.660000 </td>
-   <td style="text-align:right;"> 0.905000 </td>
-   <td style="text-align:right;"> 5.789000 </td>
+   <td style="text-align:right;"> 6.0520 </td>
+   <td style="text-align:right;"> 0.65400 </td>
+   <td style="text-align:right;"> 5.78900 </td>
    <td style="text-align:right;"> 0.7130 </td>
   </tr>
   <tr>
    <td style="text-align:left;"> Mean </td>
    <td style="text-align:left;"> NA </td>
-   <td style="text-align:right;"> 6.042125 </td>
-   <td style="text-align:right;"> 0.696125 </td>
-   <td style="text-align:right;"> 6.369375 </td>
-   <td style="text-align:right;"> 0.7535 </td>
+   <td style="text-align:right;"> 6.1295 </td>
+   <td style="text-align:right;"> 0.62525 </td>
+   <td style="text-align:right;"> 6.42875 </td>
+   <td style="text-align:right;"> 0.7855 </td>
   </tr>
 </tbody>
 </table>
@@ -1705,16 +1705,16 @@ m_female<- ggplot(df_long %>%
                             aes(x = Stratum, 
                                 y = Value,
                                 fill = Method)) +
-    geom_point(size = 3,     
-              shape = 21,   
-              color = "black") + 
+ geom_point(size = 3,     
+             shape = 21,   
+             color = "black") +
   geom_text_repel(aes(label = round(Value, 3)),  
                   size = 3,                      
-                  box.padding = 0.35,            
-                  point.padding = 0.5,         
+                  box.padding = 0.5,  
+                  point.padding = 1.5,
                   segment.color = 'grey50',
-                  min.segment.length = 0, 
-                  nudge_y = 0.05,   
+                  min.segment.length = 0.5, 
+                  nudge_y = 0.2,
                   direction = "both") +
   labs(title = "Female",
        x = "",
@@ -1748,15 +1748,15 @@ m_male<- ggplot(df_long_male %>%
                                 y = Value,
                                 fill = Method)) +
   geom_point(size = 3,     
-              shape = 21,   
-              color = "black") +  
+             shape = 21,   
+             color = "black") +
   geom_text_repel(aes(label = round(Value, 3)),  
                   size = 3,                      
-                  box.padding = 0.35,            
-                  point.padding = 0.5,         
+                  box.padding = 0.5,  
+                  point.padding = 1.5,
                   segment.color = 'grey50',
-                  min.segment.length = 0, 
-                  nudge_y = 0.05,   
+                  min.segment.length = 0.5, 
+                  nudge_y = 0.2,
                   direction = "both") +
   labs(title = "Male",
        x = "",

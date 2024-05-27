@@ -173,6 +173,11 @@ saveRDS(sf4, file = "sf4.rds")
 
 ```
 
+
+
+
+## Data
+
 Load RData
 ```{r}
 # Restore the object
@@ -185,10 +190,6 @@ Statistical difference
 m <- aov(length_total_cm ~ID, data=sf4)
 plot(TukeyHSD(m))
 ```
-
-
-## Data
-
 histogram length data to viz in anthor way.
 
 
@@ -664,9 +665,8 @@ res_GAgs <- ELEFAN_GA(lfq_results$GERLACHE,
                                   C = 1, ts = 1),
                     monitor = FALSE)
 ```
+
 #### Krill Female
-
-
 ```{r}
 #### Parameters to `SSWI`
 
@@ -1201,16 +1201,16 @@ m_female<- ggplot(df_long %>%
                             aes(x = Stratum, 
                                 y = Value,
                                 fill = Method)) +
-    geom_point(size = 3,     
-              shape = 21,   
-              color = "black") + 
+ geom_point(size = 3,     
+             shape = 21,   
+             color = "black") +
   geom_text_repel(aes(label = round(Value, 3)),  
                   size = 3,                      
-                  box.padding = 0.35,            
-                  point.padding = 0.5,         
+                  box.padding = 0.5,  
+                  point.padding = 1.5,
                   segment.color = 'grey50',
-                  min.segment.length = 0, 
-                  nudge_y = 0.05,   
+                  min.segment.length = 0.5, 
+                  nudge_y = 0.2,
                   direction = "both") +
   labs(title = "Female",
        x = "",
@@ -1243,15 +1243,15 @@ m_male<- ggplot(df_long_male %>%
                                 y = Value,
                                 fill = Method)) +
   geom_point(size = 3,     
-              shape = 21,   
-              color = "black") +  
+             shape = 21,   
+             color = "black") +
   geom_text_repel(aes(label = round(Value, 3)),  
                   size = 3,                      
-                  box.padding = 0.35,            
-                  point.padding = 0.5,         
+                  box.padding = 0.5,  
+                  point.padding = 1.5,
                   segment.color = 'grey50',
-                  min.segment.length = 0, 
-                  nudge_y = 0.05,   
+                  min.segment.length = 0.5, 
+                  nudge_y = 0.2,
                   direction = "both") +
   labs(title = "Male",
        x = "",
