@@ -65,6 +65,7 @@ library(CCAMLRGIS)
 ```
 
 
+
 # Methodology
 
 The object `ohbio2` come from data exploration analysis in data request
@@ -193,9 +194,9 @@ plot(TukeyHSD(m))
 histogram length data to viz in anthor way.
 
 
-```{r warning=FALSE}
+```{r lengcom, warning=FALSE}
 jzstrata <- ggplot(sf4 %>% 
-                     mutate(ID = if_else(ID == "Extra", "GERLACHE", ID)) %>% 
+                     mutate(ID = if_else(ID == "Extra", "GS", ID)) %>% 
                filter(Year>2010,
                       ID !="Outer"),
              aes(x=length_total_cm, 
@@ -229,7 +230,7 @@ sf5 <- sf4 |>
         "Month",
         "sex_code",
          "greenweight_kg")) |> 
-  mutate(ID = if_else(ID == "Extra", "GERLACHE", ID)) |>  
+  mutate(ID = if_else(ID == "Extra", "GS", ID)) |>  
   filter(ID !="Outer") |> 
   data.frame()
 ```
@@ -268,14 +269,14 @@ kbl(tabla_proporcion,
 #MALE
 
 sf5fil <- sf5 |>
-  filter(ID %in% c("BS", "EI", "GERLACHE", "SSIW"),
+  filter(ID %in% c("BS", "EI", "GS", "SSIW"),
          sex_code %in% "M") |>  
   mutate(date_catchperiod_start = as.Date(date_catchperiod_start)) |>  
   mutate(yearly_Group = floor_date(date_catchperiod_start, "year")) |>   # New column
   drop_na(length_total_cm) 
 
 # Definir los nombres correspondientes a cada objeto lfq_results
-nombres <- c("SSI", "BS", "GERLACHE", "EI")
+nombres <- c("SSIW", "BS", "GS", "EI")
 # Crear una lista para almacenar los resultados de cada ID
 lfq_results <- list()
 # Iterar sobre cada ID
@@ -299,14 +300,14 @@ for (id in unique(sf5fil$ID)) {
 #FEMALE
 
 sf5filhe <- sf5 |>
-  filter(ID %in% c("BS", "EI", "GERLACHE", "SSIW"),
+  filter(ID %in% c("BS", "EI", "GS", "SSIW"),
          sex_code %in% "F") |>  
   mutate(date_catchperiod_start = as.Date(date_catchperiod_start)) |>  
   mutate(yearly_Group = floor_date(date_catchperiod_start, "year")) |>   # New column
   drop_na(length_total_cm) 
 
 # Definir los nombres correspondientes a cada objeto lfq_results
-nombres <- c("SSI", "BS", "GERLACHE", "EI")
+nombres <- c("SSIW", "BS", "GS", "EI")
 # Crear una lista para almacenar los resultados de cada ID
 lfq_resultshe <- list()
 # Iterar sobre cada ID
@@ -346,7 +347,7 @@ Bhattacharya(lfq_results$BS)
 
 
 ```{r message=FALSE}
-Bhattacharya(lfq_results$GERLACHE)
+Bhattacharya(lfq_results$GS)
 ```
 
 now we assign objet to male `lfq_result` and female `lfq_resulthe` and plot with `lfqRestructure()`
@@ -356,7 +357,7 @@ Male
 
 ```{r}
 # Definir los nombres correspondientes a cada objeto lfq_results
-nombres <- c("SSI", "BS", "GERLACHE", "EI")
+nombres <- c("SSIW", "BS", "GS", "EI")
 # Iterar sobre cada objeto lfq almacenado en lfq_results
 for (i in seq_along(lfq_results)) {
   lfq <- lfq_results[[i]]
@@ -384,7 +385,7 @@ Female
 # Crear una lista para almacenar los resultados de PW_results <- list()
 
 # Definir los nombres correspondientes a cada objeto lfq_results
-nombres <- c("SSI", "BS", "GERLACHE", "EI")
+nombres <- c("SSIW", "BS", "GS", "EI")
 
 # Iterar sobre cada objeto lfq almacenado en lfq_results
 for (i in seq_along(lfq_resultshe)) {
@@ -436,17 +437,17 @@ for (id in unique_ids) {
 
 # select number of components
 
-s_normalgs = select(obj_id$GERLACHE$length_total_cm, ncomp = 2:6)
+s_normalgs = select(obj_id$GS$length_total_cm, ncomp = 2:6)
 plot(s_normalgs)
 s_normalei = select(obj_id$EI$length_total_cm, ncomp = 2:6)
 plot(s_normalei)
 s_normalbs = select(obj_id$BS$length_total_cm, ncomp = 2:6)
 plot(s_normalbs)
-s_normalsswi = select(obj_id$SSWI$length_total_cm, ncomp = 2:6)
+s_normalsswi = select(obj_id$SSIW$length_total_cm, ncomp = 2:6)
 plot(s_normalsswi)
 
 # fit a Normal mixture model
-modgs = mixfit(obj_id$GERLACHE$length_total_cm, ncomp = 3,
+modgs = mixfit(obj_id$GS$length_total_cm, ncomp = 3,
               pi = c(0.5, 0.5, 0.5), 
               mu = c( 3, 4, 5), 
               sd = c(0.2, 0.2, 0.2))
@@ -477,16 +478,16 @@ modsswi = mixfit(obj_id$SSIW$length_total_cm, ncomp = 4,
 ```{r, eval=FALSE, fig.width=8, fig.height=5}
 GSplot <- plot(modgs,
      theme = "bw",
-     title ="GERLACHE")
+     title ="GS")
 EIplot <- plot(modei,
      theme = "bw",
-     title ="ELEPHANT ISLAND")
+     title ="EI")
 BSplot <- plot(modbs,
      theme = "bw",
-     title ="BRANSFIELD STRAIT")
+     title ="BS")
 SSWIplot <- plot(modsswi,
      theme = "bw",
-     title ="SSWI")
+     title ="SSIW")
 
 ggarrange(GSplot, 
           EIplot, 
@@ -627,7 +628,7 @@ res_GAbs <- ELEFAN_GA(lfq_results$BS,
 #### Parameters to `GERLACHE`
 
 # run ELEFAN with simulated annealing
-res_SAgs <- ELEFAN_SA(lfq_results$GERLACHE, 
+res_SAgs <- ELEFAN_SA(lfq_results$GS, 
                     SA_time = 60*0.5, 
                     MA = 5, 
                     agemax = 5,
@@ -648,7 +649,7 @@ res_SAgs <- ELEFAN_SA(lfq_results$GERLACHE,
                                   C = 1, ts = 1))
 
 # run ELEFAN with genetic algorithm
-res_GAgs <- ELEFAN_GA(lfq_results$GERLACHE, 
+res_GAgs <- ELEFAN_GA(lfq_results$GS, 
                     MA = 5, 
                     seasonalised = TRUE, 
                     maxiter = 10, 
@@ -795,11 +796,11 @@ res_GAbshe <- ELEFAN_GA(lfq_resultshe$BS,
                     monitor = FALSE)
 
 
-#### Parameters to `GERLACHE`
+#### Parameters to `GS`
 
 
 # run ELEFAN with simulated annealing
-res_SAgshe <- ELEFAN_SA(lfq_resultshe$GERLACHE, 
+res_SAgshe <- ELEFAN_SA(lfq_resultshe$GS, 
                     SA_time = 60*0.5, 
                     MA = 5, 
                     agemax = 5,
@@ -820,7 +821,7 @@ res_SAgshe <- ELEFAN_SA(lfq_resultshe$GERLACHE,
                                   C = 1, ts = 1))
 
 # run ELEFAN with genetic algorithm
-res_GAgshe <- ELEFAN_GA(lfq_resultshe$GERLACHE, 
+res_GAgshe <- ELEFAN_GA(lfq_resultshe$GS, 
                     MA = 5, 
                     seasonalised = TRUE, 
                     maxiter = 10, 
@@ -876,7 +877,7 @@ t_k_linf_f <- rbind(GAbshe[1:2],
                   GAgshe[1:2],
                   SAgshe[1:2])
 row_names <- c("GA BS", "SA BS", "GA EI", 
-                 "SA EI", "GA SSWI", "SA SSWI",
+                 "SA EI", "GA SSIW", "SA SSIW",
                  "GA GS", "SA GS")
 rownames(t_k_linf_m) <- row_names
 rownames(t_k_linf_f) <- row_names
@@ -901,7 +902,6 @@ t_k_linf <- bind_rows(t_k_linf_total, means)
 ```{r eval=FALSE}
 write_csv(t_k_linf, "parametros_krill.csv")
 ```
-
 
 total Table with `L_inf_` and `K`
 
@@ -1148,13 +1148,13 @@ Meihe <- M_empirical(Linf = MEIhe$Linf, K_l = MEIhe$K,
 # junto las bases
 
 Total_M_male <- cbind(Mei, Mbs, Mgs, Msswi)
-colnames(Total_M_male) <- c("EI", "BS" , "GS", "SSWI")
+colnames(Total_M_male) <- c("EI", "BS" , "GS", "SSIW")
 mean_m <- colMeans(Total_M_male, na.rm = TRUE)
 Total_M_Mean_male <- rbind(Total_M_male, Mean = mean_m)
 # Agregar los promedios como una nueva fila al final del array
 
 Total_M_femal <- cbind(Meihe, Mbshe, Mgshe, Msswihe)
-colnames(Total_M_femal) <- c("EI", "BS" , "GS", "SSWI")
+colnames(Total_M_femal) <- c("EI", "BS" , "GS", "SSIW")
 mean_m <- colMeans(Total_M_femal, na.rm = TRUE)
 Total_M_Mean_femal <- rbind(Total_M_femal, Mean = mean_m)
 ```
@@ -1190,7 +1190,7 @@ df_female$Method <- rownames(Total_M_Mean_femal)
 
 # Convertir el data.frame a formato largo
 df_long <- df_female %>%
-  pivot_longer(cols = EI:SSWI, 
+  pivot_longer(cols = EI:SSIW, 
                names_to = "Stratum", 
                values_to = "Value")
 
@@ -1231,7 +1231,7 @@ df_male$Method <- rownames(Total_M_Mean_male)
 
 # Convertir el data.frame a formato largo
 df_long_male <- df_male %>%
-  pivot_longer(cols = EI:SSWI, 
+  pivot_longer(cols = EI:SSIW, 
                names_to = "Stratum", 
                values_to = "Value") 
 

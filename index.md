@@ -2,7 +2,7 @@
 title: "Derive growth parameters and natural mortality rates for krill while accounting for spatial heterogeneity in the Western Antarctic Peninsula."
 subtitle: "Working Paper to be submitted in a CCAMLR EMM-WG 2024"
 author: "Mardones, M; Cárdenas, C., Krüger, L., Santa Cruz, F."
-date:  "27 May, 2024"
+date:  "07 June, 2024"
 bibliography: param.bib
 csl: apa.csl
 link-citations: yes
@@ -65,6 +65,7 @@ library(TropFishR)
 library(mixR)
 library(CCAMLRGIS)
 ```
+
 
 
 # Methodology
@@ -226,7 +227,7 @@ histogram length data to viz in anthor way.
 
 ```r
 jzstrata <- ggplot(sf4 %>% 
-                     mutate(ID = if_else(ID == "Extra", "GERLACHE", ID)) %>% 
+                     mutate(ID = if_else(ID == "Extra", "GS", ID)) %>% 
                filter(Year>2010,
                       ID !="Outer"),
              aes(x=length_total_cm, 
@@ -250,7 +251,7 @@ jzstrata <- ggplot(sf4 %>%
 jzstrata
 ```
 
-<img src="index_files/figure-html/unnamed-chunk-7-1.jpeg" style="display: block; margin: auto;" />
+<img src="index_files/figure-html/lengcom-1.jpeg" style="display: block; margin: auto;" />
 Now, must filter the DF
 
 
@@ -263,7 +264,7 @@ sf5 <- sf4 |>
         "Month",
         "sex_code",
          "greenweight_kg")) |> 
-  mutate(ID = if_else(ID == "Extra", "GERLACHE", ID)) |>  
+  mutate(ID = if_else(ID == "Extra", "GS", ID)) |>  
   filter(ID !="Outer") |> 
   data.frame()
 ```
@@ -316,7 +317,7 @@ kbl(tabla_proporcion,
    <td style="text-align:left;"> 2 </td>
   </tr>
   <tr>
-   <td style="text-align:left;"> GERLACHE </td>
+   <td style="text-align:left;"> GS </td>
    <td style="text-align:right;"> 12.13 </td>
    <td style="text-align:left;"> 3 </td>
   </tr>
@@ -342,14 +343,14 @@ kbl(tabla_proporcion,
 #MALE
 
 sf5fil <- sf5 |>
-  filter(ID %in% c("BS", "EI", "GERLACHE", "SSIW"),
+  filter(ID %in% c("BS", "EI", "GS", "SSIW"),
          sex_code %in% "M") |>  
   mutate(date_catchperiod_start = as.Date(date_catchperiod_start)) |>  
   mutate(yearly_Group = floor_date(date_catchperiod_start, "year")) |>   # New column
   drop_na(length_total_cm) 
 
 # Definir los nombres correspondientes a cada objeto lfq_results
-nombres <- c("SSI", "BS", "GERLACHE", "EI")
+nombres <- c("SSIW", "BS", "GS", "EI")
 # Crear una lista para almacenar los resultados de cada ID
 lfq_results <- list()
 # Iterar sobre cada ID
@@ -371,20 +372,20 @@ for (id in unique(sf5fil$ID)) {
 }
 ```
 
-<img src="index_files/figure-html/unnamed-chunk-10-1.jpeg" style="display: block; margin: auto;" /><img src="index_files/figure-html/unnamed-chunk-10-2.jpeg" style="display: block; margin: auto;" /><img src="index_files/figure-html/unnamed-chunk-10-3.jpeg" style="display: block; margin: auto;" /><img src="index_files/figure-html/unnamed-chunk-10-4.jpeg" style="display: block; margin: auto;" />
+<img src="index_files/figure-html/unnamed-chunk-9-1.jpeg" style="display: block; margin: auto;" /><img src="index_files/figure-html/unnamed-chunk-9-2.jpeg" style="display: block; margin: auto;" /><img src="index_files/figure-html/unnamed-chunk-9-3.jpeg" style="display: block; margin: auto;" /><img src="index_files/figure-html/unnamed-chunk-9-4.jpeg" style="display: block; margin: auto;" />
 
 ```r
 #FEMALE
 
 sf5filhe <- sf5 |>
-  filter(ID %in% c("BS", "EI", "GERLACHE", "SSIW"),
+  filter(ID %in% c("BS", "EI", "GS", "SSIW"),
          sex_code %in% "F") |>  
   mutate(date_catchperiod_start = as.Date(date_catchperiod_start)) |>  
   mutate(yearly_Group = floor_date(date_catchperiod_start, "year")) |>   # New column
   drop_na(length_total_cm) 
 
 # Definir los nombres correspondientes a cada objeto lfq_results
-nombres <- c("SSI", "BS", "GERLACHE", "EI")
+nombres <- c("SSIW", "BS", "GS", "EI")
 # Crear una lista para almacenar los resultados de cada ID
 lfq_resultshe <- list()
 # Iterar sobre cada ID
@@ -406,7 +407,7 @@ for (id in unique(sf5filhe$ID)) {
 }
 ```
 
-<img src="index_files/figure-html/unnamed-chunk-10-5.jpeg" style="display: block; margin: auto;" /><img src="index_files/figure-html/unnamed-chunk-10-6.jpeg" style="display: block; margin: auto;" /><img src="index_files/figure-html/unnamed-chunk-10-7.jpeg" style="display: block; margin: auto;" /><img src="index_files/figure-html/unnamed-chunk-10-8.jpeg" style="display: block; margin: auto;" />
+<img src="index_files/figure-html/unnamed-chunk-9-5.jpeg" style="display: block; margin: auto;" /><img src="index_files/figure-html/unnamed-chunk-9-6.jpeg" style="display: block; margin: auto;" /><img src="index_files/figure-html/unnamed-chunk-9-7.jpeg" style="display: block; margin: auto;" /><img src="index_files/figure-html/unnamed-chunk-9-8.jpeg" style="display: block; margin: auto;" />
 
 Identified difference in length distribution just to male:
 
@@ -454,7 +455,7 @@ Bhattacharya(lfq_results$BS)
 
 
 ```r
-Bhattacharya(lfq_results$GERLACHE)
+Bhattacharya(lfq_results$GS)
 ```
 
 ```
@@ -473,7 +474,7 @@ Male
 
 ```r
 # Definir los nombres correspondientes a cada objeto lfq_results
-nombres <- c("SSI", "BS", "GERLACHE", "EI")
+nombres <- c("SSIW", "BS", "GS", "EI")
 # Iterar sobre cada objeto lfq almacenado en lfq_results
 for (i in seq_along(lfq_results)) {
   lfq <- lfq_results[[i]]
@@ -495,7 +496,7 @@ for (i in seq_along(lfq_results)) {
 }
 ```
 
-<img src="index_files/figure-html/unnamed-chunk-15-1.jpeg" style="display: block; margin: auto;" /><img src="index_files/figure-html/unnamed-chunk-15-2.jpeg" style="display: block; margin: auto;" /><img src="index_files/figure-html/unnamed-chunk-15-3.jpeg" style="display: block; margin: auto;" /><img src="index_files/figure-html/unnamed-chunk-15-4.jpeg" style="display: block; margin: auto;" />
+<img src="index_files/figure-html/unnamed-chunk-14-1.jpeg" style="display: block; margin: auto;" /><img src="index_files/figure-html/unnamed-chunk-14-2.jpeg" style="display: block; margin: auto;" /><img src="index_files/figure-html/unnamed-chunk-14-3.jpeg" style="display: block; margin: auto;" /><img src="index_files/figure-html/unnamed-chunk-14-4.jpeg" style="display: block; margin: auto;" />
 
 Female
 
@@ -504,7 +505,7 @@ Female
 # Crear una lista para almacenar los resultados de PW_results <- list()
 
 # Definir los nombres correspondientes a cada objeto lfq_results
-nombres <- c("SSI", "BS", "GERLACHE", "EI")
+nombres <- c("SSIW", "BS", "GS", "EI")
 
 # Iterar sobre cada objeto lfq almacenado en lfq_results
 for (i in seq_along(lfq_resultshe)) {
@@ -531,7 +532,7 @@ for (i in seq_along(lfq_resultshe)) {
 }
 ```
 
-<img src="index_files/figure-html/unnamed-chunk-16-1.jpeg" style="display: block; margin: auto;" /><img src="index_files/figure-html/unnamed-chunk-16-2.jpeg" style="display: block; margin: auto;" /><img src="index_files/figure-html/unnamed-chunk-16-3.jpeg" style="display: block; margin: auto;" /><img src="index_files/figure-html/unnamed-chunk-16-4.jpeg" style="display: block; margin: auto;" />
+<img src="index_files/figure-html/unnamed-chunk-15-1.jpeg" style="display: block; margin: auto;" /><img src="index_files/figure-html/unnamed-chunk-15-2.jpeg" style="display: block; margin: auto;" /><img src="index_files/figure-html/unnamed-chunk-15-3.jpeg" style="display: block; margin: auto;" /><img src="index_files/figure-html/unnamed-chunk-15-4.jpeg" style="display: block; margin: auto;" />
 ### Modal Progression analysis with `ELEFAN` to estimated `Linf`and `K`
 
 Method based on @Pauly1987 and @Mildenberger2017
@@ -558,17 +559,17 @@ for (id in unique_ids) {
 
 # select number of components
 
-s_normalgs = select(obj_id$GERLACHE$length_total_cm, ncomp = 2:6)
+s_normalgs = select(obj_id$GS$length_total_cm, ncomp = 2:6)
 plot(s_normalgs)
 s_normalei = select(obj_id$EI$length_total_cm, ncomp = 2:6)
 plot(s_normalei)
 s_normalbs = select(obj_id$BS$length_total_cm, ncomp = 2:6)
 plot(s_normalbs)
-s_normalsswi = select(obj_id$SSWI$length_total_cm, ncomp = 2:6)
+s_normalsswi = select(obj_id$SSIW$length_total_cm, ncomp = 2:6)
 plot(s_normalsswi)
 
 # fit a Normal mixture model
-modgs = mixfit(obj_id$GERLACHE$length_total_cm, ncomp = 3,
+modgs = mixfit(obj_id$GS$length_total_cm, ncomp = 3,
               pi = c(0.5, 0.5, 0.5), 
               mu = c( 3, 4, 5), 
               sd = c(0.2, 0.2, 0.2))
@@ -600,16 +601,16 @@ modsswi = mixfit(obj_id$SSIW$length_total_cm, ncomp = 4,
 ```r
 GSplot <- plot(modgs,
      theme = "bw",
-     title ="GERLACHE")
+     title ="GS")
 EIplot <- plot(modei,
      theme = "bw",
-     title ="ELEPHANT ISLAND")
+     title ="EI")
 BSplot <- plot(modbs,
      theme = "bw",
-     title ="BRANSFIELD STRAIT")
+     title ="BS")
 SSWIplot <- plot(modsswi,
      theme = "bw",
-     title ="SSWI")
+     title ="SSIW")
 
 ggarrange(GSplot, 
           EIplot, 
@@ -650,12 +651,12 @@ res_SAsswi <- ELEFAN_SA(lfq_results$SSIW,
 ```
 ## Simulated annealing is running. 
 ## This will take approximately 0.5 minutes.
-## timeSpan = 30.0122 maxTime = 30
+## timeSpan = 30.016179 maxTime = 30
 ## Emini is: -0.2717015803
 ## xmini are:
 ## 6.593828037 0.693300965 0.4647053033 0.7490957195 0.8974912463 
-## Totally it used 30.012212 secs
-## No. of function call is: 1709
+## Totally it used 30.016197 secs
+## No. of function call is: 1500
 ```
 
 ```r
@@ -682,7 +683,7 @@ res_GAsswi <- ELEFAN_GA(lfq_results$SSIW,
 ## Genetic algorithm is running. This might take some time.
 ```
 
-<img src="index_files/figure-html/unnamed-chunk-19-1.jpeg" style="display: block; margin: auto;" />
+<img src="index_files/figure-html/unnamed-chunk-18-1.jpeg" style="display: block; margin: auto;" />
 
 ```r
 #### Parameters to `EI`
@@ -712,12 +713,12 @@ res_SAei <- ELEFAN_SA(lfq_results$EI,
 ```
 ## Simulated annealing is running. 
 ## This will take approximately 0.5 minutes.
-## timeSpan = 30.012513 maxTime = 30
+## timeSpan = 30.003843 maxTime = 30
 ## Emini is: -0.2367092272
 ## xmini are:
 ## 7.314306291 0.9412915653 0.6182883382 0.7314349413 0.4690019973 
-## Totally it used 30.01253 secs
-## No. of function call is: 2142
+## Totally it used 30.003858 secs
+## No. of function call is: 1755
 ```
 
 ```r
@@ -744,7 +745,7 @@ res_GAei <- ELEFAN_GA(lfq_results$EI,
 ## Genetic algorithm is running. This might take some time.
 ```
 
-<img src="index_files/figure-html/unnamed-chunk-19-2.jpeg" style="display: block; margin: auto;" />
+<img src="index_files/figure-html/unnamed-chunk-18-2.jpeg" style="display: block; margin: auto;" />
 
 ```r
 #### Parameters to `BS`
@@ -774,12 +775,12 @@ res_SAbs <- ELEFAN_SA(lfq_results$BS,
 ```
 ## Simulated annealing is running. 
 ## This will take approximately 0.5 minutes.
-## timeSpan = 30.005115 maxTime = 30
+## timeSpan = 30.003413 maxTime = 30
 ## Emini is: -0.415276945
 ## xmini are:
 ## 5.894466101 0.9346580543 0.9088346824 0.4661808193 0.3456628323 
-## Totally it used 30.005128 secs
-## No. of function call is: 1868
+## Totally it used 30.00343 secs
+## No. of function call is: 1676
 ```
 
 ```r
@@ -806,13 +807,13 @@ res_GAbs <- ELEFAN_GA(lfq_results$BS,
 ## Genetic algorithm is running. This might take some time.
 ```
 
-<img src="index_files/figure-html/unnamed-chunk-19-3.jpeg" style="display: block; margin: auto;" />
+<img src="index_files/figure-html/unnamed-chunk-18-3.jpeg" style="display: block; margin: auto;" />
 
 ```r
 #### Parameters to `GERLACHE`
 
 # run ELEFAN with simulated annealing
-res_SAgs <- ELEFAN_SA(lfq_results$GERLACHE, 
+res_SAgs <- ELEFAN_SA(lfq_results$GS, 
                     SA_time = 60*0.5, 
                     MA = 5, 
                     agemax = 5,
@@ -836,17 +837,17 @@ res_SAgs <- ELEFAN_SA(lfq_results$GERLACHE,
 ```
 ## Simulated annealing is running. 
 ## This will take approximately 0.5 minutes.
-## timeSpan = 30.005304 maxTime = 30
+## timeSpan = 30.000643 maxTime = 30
 ## Emini is: -0.2869010907
 ## xmini are:
 ## 5.789427124 0.7127949446 0.4013525844 0.5469309241 0.1102455743 
-## Totally it used 30.005317 secs
-## No. of function call is: 2672
+## Totally it used 30.000657 secs
+## No. of function call is: 2138
 ```
 
 ```r
 # run ELEFAN with genetic algorithm
-res_GAgs <- ELEFAN_GA(lfq_results$GERLACHE, 
+res_GAgs <- ELEFAN_GA(lfq_results$GS, 
                     MA = 5, 
                     seasonalised = TRUE, 
                     maxiter = 10, 
@@ -868,7 +869,7 @@ res_GAgs <- ELEFAN_GA(lfq_results$GERLACHE,
 ## Genetic algorithm is running. This might take some time.
 ```
 
-<img src="index_files/figure-html/unnamed-chunk-19-4.jpeg" style="display: block; margin: auto;" />
+<img src="index_files/figure-html/unnamed-chunk-18-4.jpeg" style="display: block; margin: auto;" />
 
 #### Krill Female
 
@@ -900,12 +901,12 @@ res_SAsswihe <- ELEFAN_SA(lfq_resultshe$SSIW,
 ```
 ## Simulated annealing is running. 
 ## This will take approximately 0.5 minutes.
-## timeSpan = 30.04434 maxTime = 30
+## timeSpan = 30.006573 maxTime = 30
 ## Emini is: -0.2316358367
 ## xmini are:
 ## 6.003211424 0.6594774183 0.1511300988 0.1896827698 0.9636289105 
-## Totally it used 30.044356 secs
-## No. of function call is: 1843
+## Totally it used 30.006587 secs
+## No. of function call is: 1553
 ```
 
 ```r
@@ -932,7 +933,7 @@ res_GAsswihe <- ELEFAN_GA(lfq_resultshe$SSIW,
 ## Genetic algorithm is running. This might take some time.
 ```
 
-<img src="index_files/figure-html/unnamed-chunk-20-1.jpeg" style="display: block; margin: auto;" />
+<img src="index_files/figure-html/unnamed-chunk-19-1.jpeg" style="display: block; margin: auto;" />
 
 ```r
 #### Parameters to `EI`
@@ -962,12 +963,12 @@ res_SAeihe <- ELEFAN_SA(lfq_resultshe$EI,
 ```
 ## Simulated annealing is running. 
 ## This will take approximately 0.5 minutes.
-## timeSpan = 30.001721 maxTime = 30
-## Emini is: -0.3102707119
+## timeSpan = 30.00953 maxTime = 30
+## Emini is: -0.2964366709
 ## xmini are:
-## 5.891642671 0.6415225773 0.6244705464 0.6804234903 0.7977122728 
-## Totally it used 30.001732 secs
-## No. of function call is: 2103
+## 5.585338324 0.9580215203 0.2021615843 0.7399474084 0.666007027 
+## Totally it used 30.009546 secs
+## No. of function call is: 1812
 ```
 
 ```r
@@ -994,7 +995,7 @@ res_GAeihe <- ELEFAN_GA(lfq_resultshe$EI,
 ## Genetic algorithm is running. This might take some time.
 ```
 
-<img src="index_files/figure-html/unnamed-chunk-20-2.jpeg" style="display: block; margin: auto;" />
+<img src="index_files/figure-html/unnamed-chunk-19-2.jpeg" style="display: block; margin: auto;" />
 
 ```r
 #### Parameters to `BS`
@@ -1025,12 +1026,12 @@ res_SAbshe <- ELEFAN_SA(lfq_resultshe$BS,
 ```
 ## Simulated annealing is running. 
 ## This will take approximately 0.5 minutes.
-## timeSpan = 30.012529 maxTime = 30
+## timeSpan = 30.012095 maxTime = 30
 ## Emini is: -0.4349139705
 ## xmini are:
 ## 5.923948187 0.8310357623 0.5259462683 0.3320332617 0.281676233 
-## Totally it used 30.012542 secs
-## No. of function call is: 1671
+## Totally it used 30.01211 secs
+## No. of function call is: 1649
 ```
 
 ```r
@@ -1057,14 +1058,14 @@ res_GAbshe <- ELEFAN_GA(lfq_resultshe$BS,
 ## Genetic algorithm is running. This might take some time.
 ```
 
-<img src="index_files/figure-html/unnamed-chunk-20-3.jpeg" style="display: block; margin: auto;" />
+<img src="index_files/figure-html/unnamed-chunk-19-3.jpeg" style="display: block; margin: auto;" />
 
 ```r
-#### Parameters to `GERLACHE`
+#### Parameters to `GS`
 
 
 # run ELEFAN with simulated annealing
-res_SAgshe <- ELEFAN_SA(lfq_resultshe$GERLACHE, 
+res_SAgshe <- ELEFAN_SA(lfq_resultshe$GS, 
                     SA_time = 60*0.5, 
                     MA = 5, 
                     agemax = 5,
@@ -1088,17 +1089,17 @@ res_SAgshe <- ELEFAN_SA(lfq_resultshe$GERLACHE,
 ```
 ## Simulated annealing is running. 
 ## This will take approximately 0.5 minutes.
-## timeSpan = 30.001568 maxTime = 30
+## timeSpan = 30.001745 maxTime = 30
 ## Emini is: -0.3921830599
 ## xmini are:
 ## 6.05175862 0.6535953842 0.2468843122 0.4196294853 0.2307560779 
-## Totally it used 30.001579 secs
-## No. of function call is: 2554
+## Totally it used 30.001759 secs
+## No. of function call is: 2170
 ```
 
 ```r
 # run ELEFAN with genetic algorithm
-res_GAgshe <- ELEFAN_GA(lfq_resultshe$GERLACHE, 
+res_GAgshe <- ELEFAN_GA(lfq_resultshe$GS, 
                     MA = 5, 
                     seasonalised = TRUE, 
                     maxiter = 10, 
@@ -1120,7 +1121,7 @@ res_GAgshe <- ELEFAN_GA(lfq_resultshe$GERLACHE,
 ## Genetic algorithm is running. This might take some time.
 ```
 
-<img src="index_files/figure-html/unnamed-chunk-20-4.jpeg" style="display: block; margin: auto;" />
+<img src="index_files/figure-html/unnamed-chunk-19-4.jpeg" style="display: block; margin: auto;" />
 
 Resuming parameters to both sex  by strata to krill
 
@@ -1161,7 +1162,7 @@ t_k_linf_f <- rbind(GAbshe[1:2],
                   GAgshe[1:2],
                   SAgshe[1:2])
 row_names <- c("GA BS", "SA BS", "GA EI", 
-                 "SA EI", "GA SSWI", "SA SSWI",
+                 "SA EI", "GA SSIW", "SA SSIW",
                  "GA GS", "SA GS")
 rownames(t_k_linf_m) <- row_names
 rownames(t_k_linf_f) <- row_names
@@ -1187,7 +1188,6 @@ t_k_linf <- bind_rows(t_k_linf_total, means)
 ```r
 write_csv(t_k_linf, "parametros_krill.csv")
 ```
-
 
 total Table with `L_inf_` and `K`
 
@@ -1219,7 +1219,7 @@ t_k_linf %>%
   <tr>
    <td style="text-align:left;"> GA </td>
    <td style="text-align:left;"> BS </td>
-   <td style="text-align:right;"> 6.6030 </td>
+   <td style="text-align:right;"> 6.603000 </td>
    <td style="text-align:right;"> 0.38500 </td>
    <td style="text-align:right;"> 6.02600 </td>
    <td style="text-align:right;"> 0.6860 </td>
@@ -1227,7 +1227,7 @@ t_k_linf %>%
   <tr>
    <td style="text-align:left;"> SA </td>
    <td style="text-align:left;"> BS </td>
-   <td style="text-align:right;"> 5.9240 </td>
+   <td style="text-align:right;"> 5.924000 </td>
    <td style="text-align:right;"> 0.83100 </td>
    <td style="text-align:right;"> 5.89400 </td>
    <td style="text-align:right;"> 0.9350 </td>
@@ -1235,7 +1235,7 @@ t_k_linf %>%
   <tr>
    <td style="text-align:left;"> GA </td>
    <td style="text-align:left;"> EI </td>
-   <td style="text-align:right;"> 5.9450 </td>
+   <td style="text-align:right;"> 5.945000 </td>
    <td style="text-align:right;"> 0.61600 </td>
    <td style="text-align:right;"> 6.90200 </td>
    <td style="text-align:right;"> 0.7990 </td>
@@ -1243,23 +1243,23 @@ t_k_linf %>%
   <tr>
    <td style="text-align:left;"> SA </td>
    <td style="text-align:left;"> EI </td>
-   <td style="text-align:right;"> 5.8920 </td>
-   <td style="text-align:right;"> 0.64200 </td>
+   <td style="text-align:right;"> 5.585000 </td>
+   <td style="text-align:right;"> 0.95800 </td>
    <td style="text-align:right;"> 7.31400 </td>
    <td style="text-align:right;"> 0.9410 </td>
   </tr>
   <tr>
    <td style="text-align:left;"> GA </td>
-   <td style="text-align:left;"> SSWI </td>
-   <td style="text-align:right;"> 6.6060 </td>
+   <td style="text-align:left;"> SSIW </td>
+   <td style="text-align:right;"> 6.606000 </td>
    <td style="text-align:right;"> 0.52300 </td>
    <td style="text-align:right;"> 6.47000 </td>
    <td style="text-align:right;"> 0.6460 </td>
   </tr>
   <tr>
    <td style="text-align:left;"> SA </td>
-   <td style="text-align:left;"> SSWI </td>
-   <td style="text-align:right;"> 6.0030 </td>
+   <td style="text-align:left;"> SSIW </td>
+   <td style="text-align:right;"> 6.003000 </td>
    <td style="text-align:right;"> 0.65900 </td>
    <td style="text-align:right;"> 6.59400 </td>
    <td style="text-align:right;"> 0.6930 </td>
@@ -1267,7 +1267,7 @@ t_k_linf %>%
   <tr>
    <td style="text-align:left;"> GA </td>
    <td style="text-align:left;"> GS </td>
-   <td style="text-align:right;"> 6.0110 </td>
+   <td style="text-align:right;"> 6.011000 </td>
    <td style="text-align:right;"> 0.69200 </td>
    <td style="text-align:right;"> 6.44100 </td>
    <td style="text-align:right;"> 0.8710 </td>
@@ -1275,7 +1275,7 @@ t_k_linf %>%
   <tr>
    <td style="text-align:left;"> SA </td>
    <td style="text-align:left;"> GS </td>
-   <td style="text-align:right;"> 6.0520 </td>
+   <td style="text-align:right;"> 6.052000 </td>
    <td style="text-align:right;"> 0.65400 </td>
    <td style="text-align:right;"> 5.78900 </td>
    <td style="text-align:right;"> 0.7130 </td>
@@ -1283,8 +1283,8 @@ t_k_linf %>%
   <tr>
    <td style="text-align:left;"> Mean </td>
    <td style="text-align:left;"> NA </td>
-   <td style="text-align:right;"> 6.1295 </td>
-   <td style="text-align:right;"> 0.62525 </td>
+   <td style="text-align:right;"> 6.091125 </td>
+   <td style="text-align:right;"> 0.66475 </td>
    <td style="text-align:right;"> 6.42875 </td>
    <td style="text-align:right;"> 0.7855 </td>
   </tr>
@@ -1375,7 +1375,7 @@ ggarrange(female, male, common.legend = TRUE,
           legend="bottom")
 ```
 
-<img src="index_files/figure-html/unnamed-chunk-27-1.jpeg" style="display: block; margin: auto;" />
+<img src="index_files/figure-html/unnamed-chunk-26-1.jpeg" style="display: block; margin: auto;" />
 
 
 ### Method Nonlinear Mixed-Effects Models
@@ -1528,13 +1528,13 @@ Meihe <- M_empirical(Linf = MEIhe$Linf, K_l = MEIhe$K,
 # junto las bases
 
 Total_M_male <- cbind(Mei, Mbs, Mgs, Msswi)
-colnames(Total_M_male) <- c("EI", "BS" , "GS", "SSWI")
+colnames(Total_M_male) <- c("EI", "BS" , "GS", "SSIW")
 mean_m <- colMeans(Total_M_male, na.rm = TRUE)
 Total_M_Mean_male <- rbind(Total_M_male, Mean = mean_m)
 # Agregar los promedios como una nueva fila al final del array
 
 Total_M_femal <- cbind(Meihe, Mbshe, Mgshe, Msswihe)
-colnames(Total_M_femal) <- c("EI", "BS" , "GS", "SSWI")
+colnames(Total_M_femal) <- c("EI", "BS" , "GS", "SSIW")
 mean_m <- colMeans(Total_M_femal, na.rm = TRUE)
 Total_M_Mean_femal <- rbind(Total_M_femal, Mean = mean_m)
 ```
@@ -1559,7 +1559,7 @@ Total_M_Mean_male  %>%
    <th style="text-align:right;"> EI </th>
    <th style="text-align:right;"> BS </th>
    <th style="text-align:right;"> GS </th>
-   <th style="text-align:right;"> SSWI </th>
+   <th style="text-align:right;"> SSIW </th>
   </tr>
  </thead>
 <tbody>
@@ -1633,7 +1633,7 @@ Total_M_Mean_femal  %>%
    <th style="text-align:right;"> EI </th>
    <th style="text-align:right;"> BS </th>
    <th style="text-align:right;"> GS </th>
-   <th style="text-align:right;"> SSWI </th>
+   <th style="text-align:right;"> SSIW </th>
   </tr>
  </thead>
 <tbody>
@@ -1694,7 +1694,7 @@ df_female$Method <- rownames(Total_M_Mean_femal)
 
 # Convertir el data.frame a formato largo
 df_long <- df_female %>%
-  pivot_longer(cols = EI:SSWI, 
+  pivot_longer(cols = EI:SSIW, 
                names_to = "Stratum", 
                values_to = "Value")
 
@@ -1736,7 +1736,7 @@ df_male$Method <- rownames(Total_M_Mean_male)
 
 # Convertir el data.frame a formato largo
 df_long_male <- df_male %>%
-  pivot_longer(cols = EI:SSWI, 
+  pivot_longer(cols = EI:SSIW, 
                names_to = "Stratum", 
                values_to = "Value") 
 
@@ -1777,7 +1777,7 @@ ggarrange(m_female, m_male,
           legend="right")
 ```
 
-<img src="index_files/figure-html/unnamed-chunk-35-1.jpeg" style="display: block; margin: auto;" />
+<img src="index_files/figure-html/unnamed-chunk-34-1.jpeg" style="display: block; margin: auto;" />
 Statistical diferences in female
 
 
@@ -1853,8 +1853,8 @@ kbl(tukey_table,
    <td style="text-align:right;"> 0.1838424 </td>
   </tr>
   <tr>
-   <td style="text-align:left;"> SSWI-BS </td>
-   <td style="text-align:left;"> SSWI </td>
+   <td style="text-align:left;"> SSIW-BS </td>
+   <td style="text-align:left;"> SSIW </td>
    <td style="text-align:left;"> BS </td>
    <td style="text-align:right;"> -0.0040 </td>
    <td style="text-align:right;"> 0.9999171 </td>
@@ -1871,8 +1871,8 @@ kbl(tukey_table,
    <td style="text-align:right;"> 0.1900424 </td>
   </tr>
   <tr>
-   <td style="text-align:left;"> SSWI-EI </td>
-   <td style="text-align:left;"> SSWI </td>
+   <td style="text-align:left;"> SSIW-EI </td>
+   <td style="text-align:left;"> SSIW </td>
    <td style="text-align:left;"> EI </td>
    <td style="text-align:right;"> 0.0022 </td>
    <td style="text-align:right;"> 0.9999862 </td>
@@ -1880,8 +1880,8 @@ kbl(tukey_table,
    <td style="text-align:right;"> 0.1868424 </td>
   </tr>
   <tr>
-   <td style="text-align:left;"> SSWI-GS </td>
-   <td style="text-align:left;"> SSWI </td>
+   <td style="text-align:left;"> SSIW-GS </td>
+   <td style="text-align:left;"> SSIW </td>
    <td style="text-align:left;"> GS </td>
    <td style="text-align:right;"> -0.0032 </td>
    <td style="text-align:right;"> 0.9999575 </td>
@@ -1965,8 +1965,8 @@ kbl(tukey_table,
    <td style="text-align:right;"> 0.1838424 </td>
   </tr>
   <tr>
-   <td style="text-align:left;"> SSWI-BS </td>
-   <td style="text-align:left;"> SSWI </td>
+   <td style="text-align:left;"> SSIW-BS </td>
+   <td style="text-align:left;"> SSIW </td>
    <td style="text-align:left;"> BS </td>
    <td style="text-align:right;"> -0.0040 </td>
    <td style="text-align:right;"> 0.9999171 </td>
@@ -1983,8 +1983,8 @@ kbl(tukey_table,
    <td style="text-align:right;"> 0.1900424 </td>
   </tr>
   <tr>
-   <td style="text-align:left;"> SSWI-EI </td>
-   <td style="text-align:left;"> SSWI </td>
+   <td style="text-align:left;"> SSIW-EI </td>
+   <td style="text-align:left;"> SSIW </td>
    <td style="text-align:left;"> EI </td>
    <td style="text-align:right;"> 0.0022 </td>
    <td style="text-align:right;"> 0.9999862 </td>
@@ -1992,8 +1992,8 @@ kbl(tukey_table,
    <td style="text-align:right;"> 0.1868424 </td>
   </tr>
   <tr>
-   <td style="text-align:left;"> SSWI-GS </td>
-   <td style="text-align:left;"> SSWI </td>
+   <td style="text-align:left;"> SSIW-GS </td>
+   <td style="text-align:left;"> SSIW </td>
    <td style="text-align:left;"> GS </td>
    <td style="text-align:right;"> -0.0032 </td>
    <td style="text-align:right;"> 0.9999575 </td>
